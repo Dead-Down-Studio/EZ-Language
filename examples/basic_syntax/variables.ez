@@ -1,0 +1,12 @@
+
+
+
+public void main():
+    /* the variables will be declared as : 
+    *  access-modifier type name = type; 
+    * access-modifier : public, private , protected, friend
+    */
+
+    public int x = 5;
+    public string v = "test";
+    protected long bignumber // <- you can init variables the assign later

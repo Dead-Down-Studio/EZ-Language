@@ -1,0 +1,6 @@
+// Comments Like Java
+/*This Also Works*/
+
+public void main(): // mix java and python
+    print("hello world"); // love python simplicity the ';' is optional
+
