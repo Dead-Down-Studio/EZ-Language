@@ -22,18 +22,18 @@ class Builder:
 
     def lexer_build_and_test(self):
         self.run("g++ -o build/lexer src/frontend/lexer.cpp -std=c++17")
-        input_file = f"test/lexer/input{self.testnumber}.txt"
+        input_file = f"test/lexer/input/input-{self.testnumber}.txt"
+        output_file = f"test/lexer/output/output-{self.testnumber}.txt"
         if not os.path.exists(input_file):
             with open(input_file, "w") as f:
                 pass
-        self.run(f"build/lexer > {input_file}")
-        self.run(f"build/lexer")
+        with open(output_file, "w") as f:
+            self.run(f"build/lexer < {input_file} > {output_file}")
 
 
 if __name__ == "__main__":
     test_case = input("Enter test case: ")
     test_number = int(input("Enter test number: "))
     builder = Builder(testnumber=test_number)
-    match test_case:
-        case "lexer":
-            builder.lexer_build_and_test()
+    if test_case == "lexer":
+        builder.lexer_build_and_test()
