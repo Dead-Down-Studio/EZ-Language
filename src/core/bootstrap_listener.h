@@ -3,10 +3,10 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "diagnostics.h"
+#include "../diagnostics/diagnostics.h"
 
-#include "../generated/EZLanguageBaseListener.h"
-#include "../generated/EZLanguageParser.h"
+#include "../../generated/EZLanguageBaseListener.h"
+#include "../../generated/EZLanguageParser.h"
 #include "antlr4-runtime.h"
 
 class BootstrapListener : public EZLanguageBaseListener {

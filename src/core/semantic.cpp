@@ -1,5 +1,5 @@
 #include "semantic.h"
-#include "../generated/EZLanguageParser.h"
+#include "../../generated/EZLanguageParser.h"
 
 #include <unordered_set>
 

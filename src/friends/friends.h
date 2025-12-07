@@ -2,9 +2,9 @@
 #include <filesystem>
 #include <string>
 #include <vector>
-#include "diagnostics.h"
-#include "bootstrap_listener.h"
-#include "config.h"
+#include "../diagnostics/diagnostics.h"
+#include "../core/bootstrap_listener.h"
+#include "../config/config.h"
 
 struct BuildPlanEntry {
     BootstrapListener::FriendModule module;

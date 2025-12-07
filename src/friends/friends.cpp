@@ -1,5 +1,5 @@
 #include "friends.h"
-#include "util.h"
+#include "../util/util.h"
 #include <cstdlib>
 #include <fstream>
 #include <sstream>

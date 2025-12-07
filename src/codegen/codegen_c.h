@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "diagnostics.h"
-#include "../generated/EZLanguageParser.h"
+#include "../diagnostics/diagnostics.h"
+#include "../../generated/EZLanguageParser.h"
 
 class CCodeGenerator {
 public:

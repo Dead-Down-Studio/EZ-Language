@@ -19,7 +19,7 @@ struct EZConfig {
     std::string cppFlags = "";
     
     // Build settings
-    std::string outputDir = ".ezbuild";
+    std::string outputDir = ".ezenv/build";
     bool verboseBuild = false;
     
     // Load config from file (returns false if file doesn't exist or has errors)

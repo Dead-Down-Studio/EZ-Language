@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "diagnostics.h"
-#include "../generated/EZLanguageParser.h"
+#include "../diagnostics/diagnostics.h"
+#include "../../generated/EZLanguageParser.h"
 
 // Run semantic checks over the parse tree, adding diagnostics:
 //  - Access modifiers on top-level variable declarations (disallowed)

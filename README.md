@@ -42,6 +42,13 @@ Build + run (compiles friend first):
 ./build/ez_main examples/demo.ez --build --run
 ```
 
+Nix dev shell (optional, auto-activates when available):
+```bash
+./build/ez_main examples/demo.ez --prepare   # prefetch/build env
+./build/ez_main examples/demo.ez --run       # auto-enters nix-shell unless --no-env
+./build/ez_main examples/demo.ez --env-info  # show resolved env file/source
+```
+
 ## Quiet vs Verbose
 Quiet: only user `print/printf` output.
 Verbose: environment banner, friend build plan, compile/link commands, evaluation results (`=>`), variable state.
@@ -52,7 +59,7 @@ Declare and call external native code:
 friend native_math: cpp as m;
 print(m.add(3,2));
 ```
-Use `--build` to produce `.ezbuild/lib<alias>.dylib`.
+Use `--build` to produce `.ezenv/build/lib<alias>.dylib`.
 Python friends also supported (`python` language) via generated shim.
 
 ## C Emission
@@ -68,7 +75,7 @@ See `docs/` for structured guides:
 - Getting Started: `docs/getting-started/quickstart.md`
 - Concepts: environment, friend modules, visibility, types, expressions
 - Guides: embedding native code, printing & debugging
-- Reference: CLI, grammar, diagnostics
+- Reference: CLI, grammar, diagnostics, Nix environments
 - Architecture & Roadmap
 
 ## Roadmap & Milestones

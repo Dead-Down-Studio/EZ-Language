@@ -4,8 +4,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "diagnostics.h"
-#include "../generated/EZLanguageParser.h"
+#include "../diagnostics/diagnostics.h"
+#include "../../generated/EZLanguageParser.h"
 
 class SimpleInterpreter {
 public:

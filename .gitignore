@@ -17,6 +17,7 @@ dist/
 *.o
 *.out
 *.exe
+*.plan
 
 # Ignore python environment
 .venv/
@@ -29,6 +30,8 @@ test/
 
 .antlr/
 
+.ezenv/
+
 # Ignore OS-specific files
 .DS_Store
 Thumbs.db
@@ -36,3 +39,4 @@ README.md
 
 
 extensions/
+
