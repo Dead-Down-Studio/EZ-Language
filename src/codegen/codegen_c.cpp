@@ -14,6 +14,7 @@ std::string toCType(SimpleType t)
     switch (t) {
         case SimpleType::Int: return "int";
         case SimpleType::Bool: return "bool";
+        case SimpleType::String: return "const char*";
         case SimpleType::Void: return "void";
         case SimpleType::Unknown: default: return "/*unknown*/ int";
     }
@@ -98,9 +99,15 @@ private:
         auto *type = ctx.type();
         if (!type) { diagnostics.push_back({lineOf(ctx), "missing type in variable declaration"}); return; }
         const std::string t = type->getText();
-        if (t != "int" && t != "boolean") { diagnostics.push_back({lineOf(ctx), "only 'int' and 'boolean' supported in C codegen"}); return; }
+        if (t != "int" && t != "boolean" && t != "string") { 
+            diagnostics.push_back({lineOf(ctx), "only 'int', 'boolean', and 'string' supported in C codegen"}); 
+            return; 
+        }
         const std::string name = ctx.IDENTIFIER()->getText();
-        out << (t == "int" ? "int" : "bool") << ' ' << name;
+        std::string ctype = "int";
+        if (t == "boolean") ctype = "bool";
+        else if (t == "string") ctype = "const char*";
+        out << ctype << ' ' << name;
         if (auto *expr = ctx.expression()) {
             auto ce = emitExpression(*expr, diagnostics);
             if (!ce.has_value()) return;
@@ -115,7 +122,14 @@ private:
         if (!expr) { diagnostics.push_back({lineOf(ctx), "missing expression"}); return; }
         auto ce = emitExpression(*expr, diagnostics);
         if (!ce.has_value()) return;
-        out << "printf(\"%lld\\n\", (long long)(" << ce.value() << "));\n";
+        
+        // If the expression is already a print/printf call, don't wrap it
+        if (ce.value().find("printf(") == 0) {
+            out << ce.value() << ";\n";
+        } else {
+            // For other expressions, print their result
+            out << "printf(\"%lld\\n\", (long long)(" << ce.value() << "));\n";
+        }
     }
 
     void emitReturn(EZLanguageParser::ReturnStatementContext &ctx, std::ostream &out, std::vector<Diagnostic> &diagnostics)
@@ -136,12 +150,23 @@ private:
         auto left = emitPrimary(*primaries.front(), diagnostics);
         if (!left.has_value()) return std::nullopt;
         std::string result = left.value();
-        const auto &ops = expr.OPERATOR();
-        for (size_t i = 0; i < ops.size(); ++i) {
-            std::string op = ops[i]->getText();
-            if (op == "&&" || op == "||" || op == "==" || op == "!=" || op == ">" || op == "<" || op == ">=" || op == "<=") {
-                // supported, fall through
-            } else if (op != "+" && op != "-" && op != "*" && op != "/") {
+        
+        // Collect all operators from OPERATOR tokens, LT, and GT tokens
+        std::vector<std::string> operators;
+        for (auto *child : expr.children) {
+            auto *terminal = dynamic_cast<antlr4::tree::TerminalNode *>(child);
+            if (!terminal) continue;
+            const auto type = terminal->getSymbol()->getType();
+            if (type == EZLanguageParser::OPERATOR || type == EZLanguageParser::LT || type == EZLanguageParser::GT) {
+                operators.push_back(terminal->getText());
+            }
+        }
+        
+        for (size_t i = 0; i < operators.size(); ++i) {
+            std::string op = operators[i];
+            if (op != "+" && op != "-" && op != "*" && op != "/" && 
+                op != "&&" && op != "||" && op != "==" && op != "!=" && 
+                op != ">" && op != "<" && op != ">=" && op != "<=") {
                 diagnostics.push_back({lineOf(expr), "operator '" + op + "' not supported in C codegen"});
                 return std::nullopt;
             }
@@ -160,11 +185,42 @@ private:
         if (auto *lit = p.literal()) {
             if (auto *num = lit->NUMBER()) return num->getText();
             if (auto *b = lit->BOOLEAN()) return b->getText();
+            if (auto *str = lit->STRING()) {
+                // Return the string literal as-is (already has quotes)
+                return str->getText();
+            }
             diagnostics.push_back({lineOf(p), "literal not supported"});
             return std::nullopt;
         }
         if (auto *call = p.functionCall()) {
             const std::string fname = call->IDENTIFIER()->getText();
+            
+            // Handle built-in print/printf functions
+            if (fname == "print" || fname == "printf") {
+                std::string rendered = "printf(\"";
+                std::vector<std::string> args;
+                if (auto *argList = call->argumentList()) {
+                    for (auto *expr : argList->expression()) {
+                        auto a = emitExpression(*expr, diagnostics);
+                        if (!a.has_value()) return std::nullopt;
+                        args.push_back(a.value());
+                    }
+                }
+                // Generate format string based on number of arguments
+                for (size_t i = 0; i < args.size(); ++i) {
+                    if (i > 0) rendered += " ";
+                    rendered += "%s";
+                }
+                rendered += "\\n\"";
+                // Add arguments - wrap them for conversion
+                for (const auto &arg : args) {
+                    rendered += ", " + arg;
+                }
+                rendered += ")";
+                return rendered;
+            }
+            
+            // Regular function call
             std::string rendered = fname + "(";
             if (auto *args = call->argumentList()) {
                 for (size_t i = 0; i < args->expression().size(); ++i) {
