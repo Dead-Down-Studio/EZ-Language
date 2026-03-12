@@ -1,9 +1,0 @@
-# Basic Examples
-
-Run with quiet mode first, then add `--verbose`.
-
-## hello.ez
-Demonstrates environment + printing.
-
-## arithmetic.ez
-Shows variable declaration and expression evaluation.

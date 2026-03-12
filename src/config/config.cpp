@@ -56,6 +56,7 @@ void EZConfig::setValue(const string &section, const string &key, const string &
     } else if (section == "build") {
         if (key == "output_dir") outputDir = value;
         else if (key == "verbose") verboseBuild = (value == "true" || value == "1");
+        else if (key == "no_env" || key == "no-env") noEnv = (value == "true" || value == "1");
     }
 }
 
@@ -83,10 +84,18 @@ EZConfig EZConfig::loadWithFallback(const fs::path &projectRoot) {
         }
     }
     
-    // Try project-level .ezconfig (overrides user config)
-    fs::path projectConfig = projectRoot / ".ezconfig";
-    if (fs::exists(projectConfig)) {
-        config.loadFromFile(projectConfig);
+    // Try nearest project-level .ezconfig walking upward from projectRoot
+    fs::path current = projectRoot;
+    while (true) {
+        fs::path projectConfig = current / ".ezconfig";
+        if (fs::exists(projectConfig)) {
+            config.loadFromFile(projectConfig);
+            break;
+        }
+        if (!current.has_parent_path() || current.parent_path() == current) {
+            break;
+        }
+        current = current.parent_path();
     }
     
     return config;

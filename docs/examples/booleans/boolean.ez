@@ -1,4 +1,0 @@
-env native;
-print("Booleans:", true, false);
-int x = true + 1;
-print("x =", x);

@@ -1,8 +1,9 @@
 
-// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
+// Generated from EZLanguage.g4 by ANTLR 4.13.2
 
 
 #include "EZLanguageListener.h"
+#include "EZLanguageVisitor.h"
 
 #include "EZLanguageParser.h"
 
@@ -53,8 +54,9 @@ void ezlanguageParserInitialize() {
   auto staticData = std::make_unique<EZLanguageParserStaticData>(
     std::vector<std::string>{
       "program", "statement", "envDeclaration", "includeStatement", "friendStatement", 
-      "classDeclaration", "variableDeclaration", "functionDeclaration", 
-      "parameterList", "parameter", "functionCall", "friendFunctionCall", 
+      "classDeclaration", "variableDeclaration", "assignmentStatement", 
+      "breakStatement", "continueStatement", "functionDeclaration", "parameterList", 
+      "parameter", "returnStatement", "functionCall", "friendFunctionCall", 
       "argumentList", "controlFlowStatement", "ifStatement", "loopStatement", 
       "foreachStatement", "tryCatchStatement", "runStatement", "expressionStatement", 
       "expression", "primaryExpression", "literal", "accessModifier", "type", 
@@ -62,135 +64,145 @@ void ezlanguageParserInitialize() {
     },
     std::vector<std::string>{
       "", "'env'", "';'", "'import'", "'friend'", "':'", "'as'", "'class'", 
-      "'('", "')'", "'extends'", "'implements'", "','", "'{'", "'}'", "'='", 
-      "'.'", "'if'", "'else if'", "'else'", "'while'", "'for'", "'in'", 
-      "'try'", "'catch'", "'finally'", "'run'", "'public'", "'private'", 
-      "'protected'", "'[]'", "'int'", "'float'", "'boolean'", "'string'", 
-      "'void'", "'map'", "'<'", "'>'"
+      "'('", "')'", "'extends'", "'implements'", "'{'", "'}'", "'='", "'break'", 
+      "'continue'", "'return'", "'.'", "'if'", "'else if'", "'else'", "'while'", 
+      "'for'", "'in'", "'try'", "'catch'", "'finally'", "'run'", "'public'", 
+      "'private'", "'protected'", "'[]'", "'int'", "'float'", "'boolean'", 
+      "'string'", "'void'", "'map'", "", "'<'", "'>'", "','"
     },
     std::vector<std::string>{
       "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
       "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
-      "", "", "", "", "", "OPERATOR", "BOOLEAN", "IDENTIFIER", "STRING", 
-      "NUMBER", "LINE_COMMENT", "BLOCK_COMMENT", "WS"
+      "", "", "", "", "", "OPERATOR", "LT", "GT", "COMMA", "BOOLEAN", "IDENTIFIER", 
+      "STRING", "NUMBER", "LINE_COMMENT", "BLOCK_COMMENT", "WS"
     }
   );
   static const int32_t serializedATNSegment[] = {
-  	4,1,46,346,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
+  	4,1,49,376,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,
   	7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,
   	14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,
-  	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,1,0,1,0,1,0,1,0,
-  	5,0,59,8,0,10,0,12,0,62,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,
-  	1,74,8,1,1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,4,
-  	1,4,1,5,3,5,93,8,5,1,5,1,5,1,5,1,5,1,5,1,5,3,5,101,8,5,1,5,1,5,1,5,1,
-  	5,5,5,107,8,5,10,5,12,5,110,9,5,3,5,112,8,5,1,5,1,5,1,5,5,5,117,8,5,10,
-  	5,12,5,120,9,5,1,5,1,5,1,6,3,6,125,8,6,1,6,1,6,1,6,1,6,3,6,131,8,6,1,
-  	6,1,6,1,7,3,7,136,8,7,1,7,1,7,1,7,1,7,3,7,142,8,7,1,7,1,7,1,7,5,7,147,
-  	8,7,10,7,12,7,150,9,7,1,7,1,7,1,8,1,8,1,8,5,8,157,8,8,10,8,12,8,160,9,
-  	8,1,9,1,9,1,9,1,10,1,10,1,10,3,10,168,8,10,1,10,1,10,1,11,1,11,1,11,1,
-  	11,1,11,3,11,177,8,11,1,11,1,11,1,12,1,12,1,12,5,12,184,8,12,10,12,12,
-  	12,187,9,12,1,13,1,13,3,13,191,8,13,1,14,1,14,1,14,1,14,1,14,1,14,5,14,
-  	199,8,14,10,14,12,14,202,9,14,1,14,1,14,1,14,1,14,1,14,1,14,1,14,5,14,
-  	211,8,14,10,14,12,14,214,9,14,1,14,1,14,5,14,218,8,14,10,14,12,14,221,
-  	9,14,1,14,1,14,1,14,5,14,226,8,14,10,14,12,14,229,9,14,1,14,3,14,232,
-  	8,14,1,15,1,15,1,15,3,15,237,8,15,1,15,1,15,1,15,5,15,242,8,15,10,15,
-  	12,15,245,9,15,1,15,1,15,1,16,1,16,1,16,1,16,1,16,1,16,5,16,255,8,16,
-  	10,16,12,16,258,9,16,1,16,1,16,1,17,1,17,1,17,5,17,265,8,17,10,17,12,
-  	17,268,9,17,1,17,1,17,1,17,1,17,1,17,1,17,1,17,5,17,277,8,17,10,17,12,
-  	17,280,9,17,1,17,3,17,283,8,17,1,17,1,17,1,17,5,17,288,8,17,10,17,12,
-  	17,291,9,17,1,17,3,17,294,8,17,1,18,1,18,1,18,1,18,1,18,1,18,1,19,1,19,
-  	1,19,1,20,1,20,1,20,5,20,308,8,20,10,20,12,20,311,9,20,1,21,1,21,1,21,
-  	1,21,1,21,1,21,1,21,1,21,3,21,321,8,21,1,22,1,22,1,23,1,23,1,24,1,24,
-  	3,24,329,8,24,1,25,1,25,1,25,1,25,1,25,1,25,3,25,337,8,25,1,26,1,26,1,
-  	26,1,26,1,26,1,26,1,26,1,26,0,0,27,0,2,4,6,8,10,12,14,16,18,20,22,24,
-  	26,28,30,32,34,36,38,40,42,44,46,48,50,52,0,3,1,0,20,21,2,0,40,40,42,
-  	43,1,0,27,29,369,0,60,1,0,0,0,2,73,1,0,0,0,4,75,1,0,0,0,6,79,1,0,0,0,
-  	8,83,1,0,0,0,10,92,1,0,0,0,12,124,1,0,0,0,14,135,1,0,0,0,16,153,1,0,0,
-  	0,18,161,1,0,0,0,20,164,1,0,0,0,22,171,1,0,0,0,24,180,1,0,0,0,26,190,
-  	1,0,0,0,28,192,1,0,0,0,30,233,1,0,0,0,32,248,1,0,0,0,34,261,1,0,0,0,36,
-  	295,1,0,0,0,38,301,1,0,0,0,40,304,1,0,0,0,42,320,1,0,0,0,44,322,1,0,0,
-  	0,46,324,1,0,0,0,48,326,1,0,0,0,50,336,1,0,0,0,52,338,1,0,0,0,54,59,3,
-  	2,1,0,55,59,3,10,5,0,56,59,3,34,17,0,57,59,3,36,18,0,58,54,1,0,0,0,58,
-  	55,1,0,0,0,58,56,1,0,0,0,58,57,1,0,0,0,59,62,1,0,0,0,60,58,1,0,0,0,60,
-  	61,1,0,0,0,61,63,1,0,0,0,62,60,1,0,0,0,63,64,5,0,0,1,64,1,1,0,0,0,65,
-  	74,3,4,2,0,66,74,3,6,3,0,67,74,3,8,4,0,68,74,3,22,11,0,69,74,3,38,19,
-  	0,70,74,3,12,6,0,71,74,3,26,13,0,72,74,3,32,16,0,73,65,1,0,0,0,73,66,
-  	1,0,0,0,73,67,1,0,0,0,73,68,1,0,0,0,73,69,1,0,0,0,73,70,1,0,0,0,73,71,
-  	1,0,0,0,73,72,1,0,0,0,74,3,1,0,0,0,75,76,5,1,0,0,76,77,5,41,0,0,77,78,
-  	5,2,0,0,78,5,1,0,0,0,79,80,5,3,0,0,80,81,5,41,0,0,81,82,5,2,0,0,82,7,
-  	1,0,0,0,83,84,5,4,0,0,84,85,5,41,0,0,85,86,5,5,0,0,86,87,5,41,0,0,87,
-  	88,5,6,0,0,88,89,5,41,0,0,89,90,5,2,0,0,90,9,1,0,0,0,91,93,3,46,23,0,
-  	92,91,1,0,0,0,92,93,1,0,0,0,93,94,1,0,0,0,94,95,5,7,0,0,95,96,5,41,0,
-  	0,96,97,5,8,0,0,97,100,5,9,0,0,98,99,5,10,0,0,99,101,5,41,0,0,100,98,
-  	1,0,0,0,100,101,1,0,0,0,101,111,1,0,0,0,102,103,5,11,0,0,103,108,5,41,
-  	0,0,104,105,5,12,0,0,105,107,5,41,0,0,106,104,1,0,0,0,107,110,1,0,0,0,
-  	108,106,1,0,0,0,108,109,1,0,0,0,109,112,1,0,0,0,110,108,1,0,0,0,111,102,
-  	1,0,0,0,111,112,1,0,0,0,112,113,1,0,0,0,113,118,5,13,0,0,114,117,3,12,
-  	6,0,115,117,3,14,7,0,116,114,1,0,0,0,116,115,1,0,0,0,117,120,1,0,0,0,
-  	118,116,1,0,0,0,118,119,1,0,0,0,119,121,1,0,0,0,120,118,1,0,0,0,121,122,
-  	5,14,0,0,122,11,1,0,0,0,123,125,3,46,23,0,124,123,1,0,0,0,124,125,1,0,
-  	0,0,125,126,1,0,0,0,126,127,3,48,24,0,127,130,5,41,0,0,128,129,5,15,0,
-  	0,129,131,3,40,20,0,130,128,1,0,0,0,130,131,1,0,0,0,131,132,1,0,0,0,132,
-  	133,5,2,0,0,133,13,1,0,0,0,134,136,3,46,23,0,135,134,1,0,0,0,135,136,
-  	1,0,0,0,136,137,1,0,0,0,137,138,3,48,24,0,138,139,5,41,0,0,139,141,5,
-  	8,0,0,140,142,3,16,8,0,141,140,1,0,0,0,141,142,1,0,0,0,142,143,1,0,0,
-  	0,143,144,5,9,0,0,144,148,5,13,0,0,145,147,3,2,1,0,146,145,1,0,0,0,147,
-  	150,1,0,0,0,148,146,1,0,0,0,148,149,1,0,0,0,149,151,1,0,0,0,150,148,1,
-  	0,0,0,151,152,5,14,0,0,152,15,1,0,0,0,153,158,3,18,9,0,154,155,5,12,0,
-  	0,155,157,3,18,9,0,156,154,1,0,0,0,157,160,1,0,0,0,158,156,1,0,0,0,158,
-  	159,1,0,0,0,159,17,1,0,0,0,160,158,1,0,0,0,161,162,3,48,24,0,162,163,
-  	5,41,0,0,163,19,1,0,0,0,164,165,5,41,0,0,165,167,5,8,0,0,166,168,3,24,
-  	12,0,167,166,1,0,0,0,167,168,1,0,0,0,168,169,1,0,0,0,169,170,5,9,0,0,
-  	170,21,1,0,0,0,171,172,5,41,0,0,172,173,5,16,0,0,173,174,5,41,0,0,174,
-  	176,5,8,0,0,175,177,3,24,12,0,176,175,1,0,0,0,176,177,1,0,0,0,177,178,
-  	1,0,0,0,178,179,5,9,0,0,179,23,1,0,0,0,180,185,3,40,20,0,181,182,5,12,
-  	0,0,182,184,3,40,20,0,183,181,1,0,0,0,184,187,1,0,0,0,185,183,1,0,0,0,
-  	185,186,1,0,0,0,186,25,1,0,0,0,187,185,1,0,0,0,188,191,3,28,14,0,189,
-  	191,3,30,15,0,190,188,1,0,0,0,190,189,1,0,0,0,191,27,1,0,0,0,192,193,
-  	5,17,0,0,193,194,5,8,0,0,194,195,3,40,20,0,195,196,5,9,0,0,196,200,5,
-  	13,0,0,197,199,3,2,1,0,198,197,1,0,0,0,199,202,1,0,0,0,200,198,1,0,0,
-  	0,200,201,1,0,0,0,201,203,1,0,0,0,202,200,1,0,0,0,203,219,5,14,0,0,204,
-  	205,5,18,0,0,205,206,5,8,0,0,206,207,3,40,20,0,207,208,5,9,0,0,208,212,
-  	5,13,0,0,209,211,3,2,1,0,210,209,1,0,0,0,211,214,1,0,0,0,212,210,1,0,
-  	0,0,212,213,1,0,0,0,213,215,1,0,0,0,214,212,1,0,0,0,215,216,5,14,0,0,
-  	216,218,1,0,0,0,217,204,1,0,0,0,218,221,1,0,0,0,219,217,1,0,0,0,219,220,
-  	1,0,0,0,220,231,1,0,0,0,221,219,1,0,0,0,222,223,5,19,0,0,223,227,5,13,
-  	0,0,224,226,3,2,1,0,225,224,1,0,0,0,226,229,1,0,0,0,227,225,1,0,0,0,227,
-  	228,1,0,0,0,228,230,1,0,0,0,229,227,1,0,0,0,230,232,5,14,0,0,231,222,
-  	1,0,0,0,231,232,1,0,0,0,232,29,1,0,0,0,233,234,7,0,0,0,234,236,5,8,0,
-  	0,235,237,3,40,20,0,236,235,1,0,0,0,236,237,1,0,0,0,237,238,1,0,0,0,238,
-  	239,5,9,0,0,239,243,5,13,0,0,240,242,3,2,1,0,241,240,1,0,0,0,242,245,
-  	1,0,0,0,243,241,1,0,0,0,243,244,1,0,0,0,244,246,1,0,0,0,245,243,1,0,0,
-  	0,246,247,5,14,0,0,247,31,1,0,0,0,248,249,5,21,0,0,249,250,5,41,0,0,250,
-  	251,5,22,0,0,251,252,5,41,0,0,252,256,5,13,0,0,253,255,3,2,1,0,254,253,
-  	1,0,0,0,255,258,1,0,0,0,256,254,1,0,0,0,256,257,1,0,0,0,257,259,1,0,0,
-  	0,258,256,1,0,0,0,259,260,5,14,0,0,260,33,1,0,0,0,261,262,5,23,0,0,262,
-  	266,5,13,0,0,263,265,3,2,1,0,264,263,1,0,0,0,265,268,1,0,0,0,266,264,
-  	1,0,0,0,266,267,1,0,0,0,267,269,1,0,0,0,268,266,1,0,0,0,269,282,5,14,
-  	0,0,270,271,5,24,0,0,271,272,5,8,0,0,272,273,5,41,0,0,273,274,5,9,0,0,
-  	274,278,5,13,0,0,275,277,3,2,1,0,276,275,1,0,0,0,277,280,1,0,0,0,278,
-  	276,1,0,0,0,278,279,1,0,0,0,279,281,1,0,0,0,280,278,1,0,0,0,281,283,5,
-  	14,0,0,282,270,1,0,0,0,282,283,1,0,0,0,283,293,1,0,0,0,284,285,5,25,0,
-  	0,285,289,5,13,0,0,286,288,3,2,1,0,287,286,1,0,0,0,288,291,1,0,0,0,289,
-  	287,1,0,0,0,289,290,1,0,0,0,290,292,1,0,0,0,291,289,1,0,0,0,292,294,5,
-  	14,0,0,293,284,1,0,0,0,293,294,1,0,0,0,294,35,1,0,0,0,295,296,5,26,0,
-  	0,296,297,5,41,0,0,297,298,5,5,0,0,298,299,5,42,0,0,299,300,5,2,0,0,300,
-  	37,1,0,0,0,301,302,3,40,20,0,302,303,5,2,0,0,303,39,1,0,0,0,304,309,3,
-  	42,21,0,305,306,5,39,0,0,306,308,3,42,21,0,307,305,1,0,0,0,308,311,1,
-  	0,0,0,309,307,1,0,0,0,309,310,1,0,0,0,310,41,1,0,0,0,311,309,1,0,0,0,
-  	312,321,5,41,0,0,313,321,3,44,22,0,314,321,3,20,10,0,315,321,3,22,11,
-  	0,316,317,5,8,0,0,317,318,3,40,20,0,318,319,5,9,0,0,319,321,1,0,0,0,320,
-  	312,1,0,0,0,320,313,1,0,0,0,320,314,1,0,0,0,320,315,1,0,0,0,320,316,1,
-  	0,0,0,321,43,1,0,0,0,322,323,7,1,0,0,323,45,1,0,0,0,324,325,7,2,0,0,325,
-  	47,1,0,0,0,326,328,3,50,25,0,327,329,5,30,0,0,328,327,1,0,0,0,328,329,
-  	1,0,0,0,329,49,1,0,0,0,330,337,5,31,0,0,331,337,5,32,0,0,332,337,5,33,
-  	0,0,333,337,5,34,0,0,334,337,5,35,0,0,335,337,3,52,26,0,336,330,1,0,0,
-  	0,336,331,1,0,0,0,336,332,1,0,0,0,336,333,1,0,0,0,336,334,1,0,0,0,336,
-  	335,1,0,0,0,337,51,1,0,0,0,338,339,5,36,0,0,339,340,5,37,0,0,340,341,
-  	3,50,25,0,341,342,5,12,0,0,342,343,3,50,25,0,343,344,5,38,0,0,344,53,
-  	1,0,0,0,36,58,60,73,92,100,108,111,116,118,124,130,135,141,148,158,167,
-  	176,185,190,200,212,219,227,231,236,243,256,266,278,282,289,293,309,320,
-  	328,336
+  	21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,
+  	28,2,29,7,29,2,30,7,30,1,0,1,0,1,0,1,0,5,0,67,8,0,10,0,12,0,70,9,0,1,
+  	0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,3,1,87,8,1,
+  	1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,4,1,5,3,
+  	5,106,8,5,1,5,1,5,1,5,1,5,1,5,1,5,3,5,114,8,5,1,5,1,5,1,5,1,5,5,5,120,
+  	8,5,10,5,12,5,123,9,5,3,5,125,8,5,1,5,1,5,1,5,5,5,130,8,5,10,5,12,5,133,
+  	9,5,1,5,1,5,1,6,3,6,138,8,6,1,6,1,6,1,6,1,6,3,6,144,8,6,1,6,1,6,1,7,1,
+  	7,1,7,1,7,1,7,1,8,1,8,1,8,1,9,1,9,1,9,1,10,3,10,160,8,10,1,10,1,10,1,
+  	10,1,10,3,10,166,8,10,1,10,1,10,1,10,5,10,171,8,10,10,10,12,10,174,9,
+  	10,1,10,1,10,1,11,1,11,1,11,5,11,181,8,11,10,11,12,11,184,9,11,1,12,1,
+  	12,1,12,1,13,1,13,3,13,191,8,13,1,13,1,13,1,14,1,14,1,14,3,14,198,8,14,
+  	1,14,1,14,1,15,1,15,1,15,1,15,1,15,3,15,207,8,15,1,15,1,15,1,16,1,16,
+  	1,16,5,16,214,8,16,10,16,12,16,217,9,16,1,17,1,17,3,17,221,8,17,1,18,
+  	1,18,1,18,1,18,1,18,1,18,5,18,229,8,18,10,18,12,18,232,9,18,1,18,1,18,
+  	1,18,1,18,1,18,1,18,1,18,5,18,241,8,18,10,18,12,18,244,9,18,1,18,1,18,
+  	5,18,248,8,18,10,18,12,18,251,9,18,1,18,1,18,1,18,5,18,256,8,18,10,18,
+  	12,18,259,9,18,1,18,3,18,262,8,18,1,19,1,19,1,19,3,19,267,8,19,1,19,1,
+  	19,1,19,5,19,272,8,19,10,19,12,19,275,9,19,1,19,1,19,1,20,1,20,1,20,1,
+  	20,1,20,1,20,5,20,285,8,20,10,20,12,20,288,9,20,1,20,1,20,1,21,1,21,1,
+  	21,5,21,295,8,21,10,21,12,21,298,9,21,1,21,1,21,1,21,1,21,1,21,1,21,1,
+  	21,5,21,307,8,21,10,21,12,21,310,9,21,1,21,3,21,313,8,21,1,21,1,21,1,
+  	21,5,21,318,8,21,10,21,12,21,321,9,21,1,21,3,21,324,8,21,1,22,1,22,1,
+  	22,1,22,1,22,1,22,1,23,1,23,1,23,1,24,1,24,1,24,5,24,338,8,24,10,24,12,
+  	24,341,9,24,1,25,1,25,1,25,1,25,1,25,1,25,1,25,1,25,3,25,351,8,25,1,26,
+  	1,26,1,27,1,27,1,28,1,28,3,28,359,8,28,1,29,1,29,1,29,1,29,1,29,1,29,
+  	3,29,367,8,29,1,30,1,30,1,30,1,30,1,30,1,30,1,30,1,30,0,0,31,0,2,4,6,
+  	8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,
+  	56,58,60,0,4,1,0,22,23,1,0,39,41,2,0,43,43,45,46,1,0,29,31,401,0,68,1,
+  	0,0,0,2,86,1,0,0,0,4,88,1,0,0,0,6,92,1,0,0,0,8,96,1,0,0,0,10,105,1,0,
+  	0,0,12,137,1,0,0,0,14,147,1,0,0,0,16,152,1,0,0,0,18,155,1,0,0,0,20,159,
+  	1,0,0,0,22,177,1,0,0,0,24,185,1,0,0,0,26,188,1,0,0,0,28,194,1,0,0,0,30,
+  	201,1,0,0,0,32,210,1,0,0,0,34,220,1,0,0,0,36,222,1,0,0,0,38,263,1,0,0,
+  	0,40,278,1,0,0,0,42,291,1,0,0,0,44,325,1,0,0,0,46,331,1,0,0,0,48,334,
+  	1,0,0,0,50,350,1,0,0,0,52,352,1,0,0,0,54,354,1,0,0,0,56,356,1,0,0,0,58,
+  	366,1,0,0,0,60,368,1,0,0,0,62,67,3,2,1,0,63,67,3,10,5,0,64,67,3,42,21,
+  	0,65,67,3,44,22,0,66,62,1,0,0,0,66,63,1,0,0,0,66,64,1,0,0,0,66,65,1,0,
+  	0,0,67,70,1,0,0,0,68,66,1,0,0,0,68,69,1,0,0,0,69,71,1,0,0,0,70,68,1,0,
+  	0,0,71,72,5,0,0,1,72,1,1,0,0,0,73,87,3,4,2,0,74,87,3,6,3,0,75,87,3,8,
+  	4,0,76,87,3,30,15,0,77,87,3,46,23,0,78,87,3,12,6,0,79,87,3,14,7,0,80,
+  	87,3,34,17,0,81,87,3,40,20,0,82,87,3,20,10,0,83,87,3,26,13,0,84,87,3,
+  	16,8,0,85,87,3,18,9,0,86,73,1,0,0,0,86,74,1,0,0,0,86,75,1,0,0,0,86,76,
+  	1,0,0,0,86,77,1,0,0,0,86,78,1,0,0,0,86,79,1,0,0,0,86,80,1,0,0,0,86,81,
+  	1,0,0,0,86,82,1,0,0,0,86,83,1,0,0,0,86,84,1,0,0,0,86,85,1,0,0,0,87,3,
+  	1,0,0,0,88,89,5,1,0,0,89,90,5,44,0,0,90,91,5,2,0,0,91,5,1,0,0,0,92,93,
+  	5,3,0,0,93,94,5,44,0,0,94,95,5,2,0,0,95,7,1,0,0,0,96,97,5,4,0,0,97,98,
+  	5,44,0,0,98,99,5,5,0,0,99,100,5,44,0,0,100,101,5,6,0,0,101,102,5,44,0,
+  	0,102,103,5,2,0,0,103,9,1,0,0,0,104,106,3,54,27,0,105,104,1,0,0,0,105,
+  	106,1,0,0,0,106,107,1,0,0,0,107,108,5,7,0,0,108,109,5,44,0,0,109,110,
+  	5,8,0,0,110,113,5,9,0,0,111,112,5,10,0,0,112,114,5,44,0,0,113,111,1,0,
+  	0,0,113,114,1,0,0,0,114,124,1,0,0,0,115,116,5,11,0,0,116,121,5,44,0,0,
+  	117,118,5,42,0,0,118,120,5,44,0,0,119,117,1,0,0,0,120,123,1,0,0,0,121,
+  	119,1,0,0,0,121,122,1,0,0,0,122,125,1,0,0,0,123,121,1,0,0,0,124,115,1,
+  	0,0,0,124,125,1,0,0,0,125,126,1,0,0,0,126,131,5,12,0,0,127,130,3,12,6,
+  	0,128,130,3,20,10,0,129,127,1,0,0,0,129,128,1,0,0,0,130,133,1,0,0,0,131,
+  	129,1,0,0,0,131,132,1,0,0,0,132,134,1,0,0,0,133,131,1,0,0,0,134,135,5,
+  	13,0,0,135,11,1,0,0,0,136,138,3,54,27,0,137,136,1,0,0,0,137,138,1,0,0,
+  	0,138,139,1,0,0,0,139,140,3,56,28,0,140,143,5,44,0,0,141,142,5,14,0,0,
+  	142,144,3,48,24,0,143,141,1,0,0,0,143,144,1,0,0,0,144,145,1,0,0,0,145,
+  	146,5,2,0,0,146,13,1,0,0,0,147,148,5,44,0,0,148,149,5,14,0,0,149,150,
+  	3,48,24,0,150,151,5,2,0,0,151,15,1,0,0,0,152,153,5,15,0,0,153,154,5,2,
+  	0,0,154,17,1,0,0,0,155,156,5,16,0,0,156,157,5,2,0,0,157,19,1,0,0,0,158,
+  	160,3,54,27,0,159,158,1,0,0,0,159,160,1,0,0,0,160,161,1,0,0,0,161,162,
+  	3,56,28,0,162,163,5,44,0,0,163,165,5,8,0,0,164,166,3,22,11,0,165,164,
+  	1,0,0,0,165,166,1,0,0,0,166,167,1,0,0,0,167,168,5,9,0,0,168,172,5,12,
+  	0,0,169,171,3,2,1,0,170,169,1,0,0,0,171,174,1,0,0,0,172,170,1,0,0,0,172,
+  	173,1,0,0,0,173,175,1,0,0,0,174,172,1,0,0,0,175,176,5,13,0,0,176,21,1,
+  	0,0,0,177,182,3,24,12,0,178,179,5,42,0,0,179,181,3,24,12,0,180,178,1,
+  	0,0,0,181,184,1,0,0,0,182,180,1,0,0,0,182,183,1,0,0,0,183,23,1,0,0,0,
+  	184,182,1,0,0,0,185,186,3,56,28,0,186,187,5,44,0,0,187,25,1,0,0,0,188,
+  	190,5,17,0,0,189,191,3,48,24,0,190,189,1,0,0,0,190,191,1,0,0,0,191,192,
+  	1,0,0,0,192,193,5,2,0,0,193,27,1,0,0,0,194,195,5,44,0,0,195,197,5,8,0,
+  	0,196,198,3,32,16,0,197,196,1,0,0,0,197,198,1,0,0,0,198,199,1,0,0,0,199,
+  	200,5,9,0,0,200,29,1,0,0,0,201,202,5,44,0,0,202,203,5,18,0,0,203,204,
+  	5,44,0,0,204,206,5,8,0,0,205,207,3,32,16,0,206,205,1,0,0,0,206,207,1,
+  	0,0,0,207,208,1,0,0,0,208,209,5,9,0,0,209,31,1,0,0,0,210,215,3,48,24,
+  	0,211,212,5,42,0,0,212,214,3,48,24,0,213,211,1,0,0,0,214,217,1,0,0,0,
+  	215,213,1,0,0,0,215,216,1,0,0,0,216,33,1,0,0,0,217,215,1,0,0,0,218,221,
+  	3,36,18,0,219,221,3,38,19,0,220,218,1,0,0,0,220,219,1,0,0,0,221,35,1,
+  	0,0,0,222,223,5,19,0,0,223,224,5,8,0,0,224,225,3,48,24,0,225,226,5,9,
+  	0,0,226,230,5,12,0,0,227,229,3,2,1,0,228,227,1,0,0,0,229,232,1,0,0,0,
+  	230,228,1,0,0,0,230,231,1,0,0,0,231,233,1,0,0,0,232,230,1,0,0,0,233,249,
+  	5,13,0,0,234,235,5,20,0,0,235,236,5,8,0,0,236,237,3,48,24,0,237,238,5,
+  	9,0,0,238,242,5,12,0,0,239,241,3,2,1,0,240,239,1,0,0,0,241,244,1,0,0,
+  	0,242,240,1,0,0,0,242,243,1,0,0,0,243,245,1,0,0,0,244,242,1,0,0,0,245,
+  	246,5,13,0,0,246,248,1,0,0,0,247,234,1,0,0,0,248,251,1,0,0,0,249,247,
+  	1,0,0,0,249,250,1,0,0,0,250,261,1,0,0,0,251,249,1,0,0,0,252,253,5,21,
+  	0,0,253,257,5,12,0,0,254,256,3,2,1,0,255,254,1,0,0,0,256,259,1,0,0,0,
+  	257,255,1,0,0,0,257,258,1,0,0,0,258,260,1,0,0,0,259,257,1,0,0,0,260,262,
+  	5,13,0,0,261,252,1,0,0,0,261,262,1,0,0,0,262,37,1,0,0,0,263,264,7,0,0,
+  	0,264,266,5,8,0,0,265,267,3,48,24,0,266,265,1,0,0,0,266,267,1,0,0,0,267,
+  	268,1,0,0,0,268,269,5,9,0,0,269,273,5,12,0,0,270,272,3,2,1,0,271,270,
+  	1,0,0,0,272,275,1,0,0,0,273,271,1,0,0,0,273,274,1,0,0,0,274,276,1,0,0,
+  	0,275,273,1,0,0,0,276,277,5,13,0,0,277,39,1,0,0,0,278,279,5,23,0,0,279,
+  	280,5,44,0,0,280,281,5,24,0,0,281,282,5,44,0,0,282,286,5,12,0,0,283,285,
+  	3,2,1,0,284,283,1,0,0,0,285,288,1,0,0,0,286,284,1,0,0,0,286,287,1,0,0,
+  	0,287,289,1,0,0,0,288,286,1,0,0,0,289,290,5,13,0,0,290,41,1,0,0,0,291,
+  	292,5,25,0,0,292,296,5,12,0,0,293,295,3,2,1,0,294,293,1,0,0,0,295,298,
+  	1,0,0,0,296,294,1,0,0,0,296,297,1,0,0,0,297,299,1,0,0,0,298,296,1,0,0,
+  	0,299,312,5,13,0,0,300,301,5,26,0,0,301,302,5,8,0,0,302,303,5,44,0,0,
+  	303,304,5,9,0,0,304,308,5,12,0,0,305,307,3,2,1,0,306,305,1,0,0,0,307,
+  	310,1,0,0,0,308,306,1,0,0,0,308,309,1,0,0,0,309,311,1,0,0,0,310,308,1,
+  	0,0,0,311,313,5,13,0,0,312,300,1,0,0,0,312,313,1,0,0,0,313,323,1,0,0,
+  	0,314,315,5,27,0,0,315,319,5,12,0,0,316,318,3,2,1,0,317,316,1,0,0,0,318,
+  	321,1,0,0,0,319,317,1,0,0,0,319,320,1,0,0,0,320,322,1,0,0,0,321,319,1,
+  	0,0,0,322,324,5,13,0,0,323,314,1,0,0,0,323,324,1,0,0,0,324,43,1,0,0,0,
+  	325,326,5,28,0,0,326,327,5,44,0,0,327,328,5,5,0,0,328,329,5,45,0,0,329,
+  	330,5,2,0,0,330,45,1,0,0,0,331,332,3,48,24,0,332,333,5,2,0,0,333,47,1,
+  	0,0,0,334,339,3,50,25,0,335,336,7,1,0,0,336,338,3,50,25,0,337,335,1,0,
+  	0,0,338,341,1,0,0,0,339,337,1,0,0,0,339,340,1,0,0,0,340,49,1,0,0,0,341,
+  	339,1,0,0,0,342,351,5,44,0,0,343,351,3,52,26,0,344,351,3,28,14,0,345,
+  	351,3,30,15,0,346,347,5,8,0,0,347,348,3,48,24,0,348,349,5,9,0,0,349,351,
+  	1,0,0,0,350,342,1,0,0,0,350,343,1,0,0,0,350,344,1,0,0,0,350,345,1,0,0,
+  	0,350,346,1,0,0,0,351,51,1,0,0,0,352,353,7,2,0,0,353,53,1,0,0,0,354,355,
+  	7,3,0,0,355,55,1,0,0,0,356,358,3,58,29,0,357,359,5,32,0,0,358,357,1,0,
+  	0,0,358,359,1,0,0,0,359,57,1,0,0,0,360,367,5,33,0,0,361,367,5,34,0,0,
+  	362,367,5,35,0,0,363,367,5,36,0,0,364,367,5,37,0,0,365,367,3,60,30,0,
+  	366,360,1,0,0,0,366,361,1,0,0,0,366,362,1,0,0,0,366,363,1,0,0,0,366,364,
+  	1,0,0,0,366,365,1,0,0,0,367,59,1,0,0,0,368,369,5,38,0,0,369,370,5,40,
+  	0,0,370,371,3,58,29,0,371,372,5,42,0,0,372,373,3,58,29,0,373,374,5,41,
+  	0,0,374,61,1,0,0,0,37,66,68,86,105,113,121,124,129,131,137,143,159,165,
+  	172,182,190,197,206,215,220,230,242,249,257,261,266,273,286,296,308,312,
+  	319,323,339,350,358,366
   };
   staticData->serializedATN = antlr4::atn::SerializedATNView(serializedATNSegment, sizeof(serializedATNSegment) / sizeof(serializedATNSegment[0]));
 
@@ -298,6 +310,14 @@ void EZLanguageParser::ProgramContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitProgram(this);
 }
 
+
+std::any EZLanguageParser::ProgramContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitProgram(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ProgramContext* EZLanguageParser::program() {
   ProgramContext *_localctx = _tracker.createInstance<ProgramContext>(_ctx, getState());
   enterRule(_localctx, 0, EZLanguageParser::RuleProgram);
@@ -312,34 +332,34 @@ EZLanguageParser::ProgramContext* EZLanguageParser::program() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(60);
+    setState(68);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16628984185242) != 0)) {
-      setState(58);
+      ((1ULL << _la) & 132486634635674) != 0)) {
+      setState(66);
       _errHandler->sync(this);
       switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 0, _ctx)) {
       case 1: {
-        setState(54);
+        setState(62);
         statement();
         break;
       }
 
       case 2: {
-        setState(55);
+        setState(63);
         classDeclaration();
         break;
       }
 
       case 3: {
-        setState(56);
+        setState(64);
         tryCatchStatement();
         break;
       }
 
       case 4: {
-        setState(57);
+        setState(65);
         runStatement();
         break;
       }
@@ -347,11 +367,11 @@ EZLanguageParser::ProgramContext* EZLanguageParser::program() {
       default:
         break;
       }
-      setState(62);
+      setState(70);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(63);
+    setState(71);
     match(EZLanguageParser::EOF);
    
   }
@@ -394,12 +414,32 @@ EZLanguageParser::VariableDeclarationContext* EZLanguageParser::StatementContext
   return getRuleContext<EZLanguageParser::VariableDeclarationContext>(0);
 }
 
+EZLanguageParser::AssignmentStatementContext* EZLanguageParser::StatementContext::assignmentStatement() {
+  return getRuleContext<EZLanguageParser::AssignmentStatementContext>(0);
+}
+
 EZLanguageParser::ControlFlowStatementContext* EZLanguageParser::StatementContext::controlFlowStatement() {
   return getRuleContext<EZLanguageParser::ControlFlowStatementContext>(0);
 }
 
 EZLanguageParser::ForeachStatementContext* EZLanguageParser::StatementContext::foreachStatement() {
   return getRuleContext<EZLanguageParser::ForeachStatementContext>(0);
+}
+
+EZLanguageParser::FunctionDeclarationContext* EZLanguageParser::StatementContext::functionDeclaration() {
+  return getRuleContext<EZLanguageParser::FunctionDeclarationContext>(0);
+}
+
+EZLanguageParser::ReturnStatementContext* EZLanguageParser::StatementContext::returnStatement() {
+  return getRuleContext<EZLanguageParser::ReturnStatementContext>(0);
+}
+
+EZLanguageParser::BreakStatementContext* EZLanguageParser::StatementContext::breakStatement() {
+  return getRuleContext<EZLanguageParser::BreakStatementContext>(0);
+}
+
+EZLanguageParser::ContinueStatementContext* EZLanguageParser::StatementContext::continueStatement() {
+  return getRuleContext<EZLanguageParser::ContinueStatementContext>(0);
 }
 
 
@@ -419,6 +459,14 @@ void EZLanguageParser::StatementContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitStatement(this);
 }
 
+
+std::any EZLanguageParser::StatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::StatementContext* EZLanguageParser::statement() {
   StatementContext *_localctx = _tracker.createInstance<StatementContext>(_ctx, getState());
   enterRule(_localctx, 2, EZLanguageParser::RuleStatement);
@@ -431,62 +479,97 @@ EZLanguageParser::StatementContext* EZLanguageParser::statement() {
     exitRule();
   });
   try {
-    setState(73);
+    setState(86);
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 2, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(65);
+      setState(73);
       envDeclaration();
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(66);
+      setState(74);
       includeStatement();
       break;
     }
 
     case 3: {
       enterOuterAlt(_localctx, 3);
-      setState(67);
+      setState(75);
       friendStatement();
       break;
     }
 
     case 4: {
       enterOuterAlt(_localctx, 4);
-      setState(68);
+      setState(76);
       friendFunctionCall();
       break;
     }
 
     case 5: {
       enterOuterAlt(_localctx, 5);
-      setState(69);
+      setState(77);
       expressionStatement();
       break;
     }
 
     case 6: {
       enterOuterAlt(_localctx, 6);
-      setState(70);
+      setState(78);
       variableDeclaration();
       break;
     }
 
     case 7: {
       enterOuterAlt(_localctx, 7);
-      setState(71);
-      controlFlowStatement();
+      setState(79);
+      assignmentStatement();
       break;
     }
 
     case 8: {
       enterOuterAlt(_localctx, 8);
-      setState(72);
+      setState(80);
+      controlFlowStatement();
+      break;
+    }
+
+    case 9: {
+      enterOuterAlt(_localctx, 9);
+      setState(81);
       foreachStatement();
+      break;
+    }
+
+    case 10: {
+      enterOuterAlt(_localctx, 10);
+      setState(82);
+      functionDeclaration();
+      break;
+    }
+
+    case 11: {
+      enterOuterAlt(_localctx, 11);
+      setState(83);
+      returnStatement();
+      break;
+    }
+
+    case 12: {
+      enterOuterAlt(_localctx, 12);
+      setState(84);
+      breakStatement();
+      break;
+    }
+
+    case 13: {
+      enterOuterAlt(_localctx, 13);
+      setState(85);
+      continueStatement();
       break;
     }
 
@@ -531,6 +614,14 @@ void EZLanguageParser::EnvDeclarationContext::exitRule(tree::ParseTreeListener *
     parserListener->exitEnvDeclaration(this);
 }
 
+
+std::any EZLanguageParser::EnvDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitEnvDeclaration(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::EnvDeclarationContext* EZLanguageParser::envDeclaration() {
   EnvDeclarationContext *_localctx = _tracker.createInstance<EnvDeclarationContext>(_ctx, getState());
   enterRule(_localctx, 4, EZLanguageParser::RuleEnvDeclaration);
@@ -544,11 +635,11 @@ EZLanguageParser::EnvDeclarationContext* EZLanguageParser::envDeclaration() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(75);
+    setState(88);
     match(EZLanguageParser::T__0);
-    setState(76);
+    setState(89);
     match(EZLanguageParser::IDENTIFIER);
-    setState(77);
+    setState(90);
     match(EZLanguageParser::T__1);
    
   }
@@ -588,6 +679,14 @@ void EZLanguageParser::IncludeStatementContext::exitRule(tree::ParseTreeListener
     parserListener->exitIncludeStatement(this);
 }
 
+
+std::any EZLanguageParser::IncludeStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitIncludeStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::IncludeStatementContext* EZLanguageParser::includeStatement() {
   IncludeStatementContext *_localctx = _tracker.createInstance<IncludeStatementContext>(_ctx, getState());
   enterRule(_localctx, 6, EZLanguageParser::RuleIncludeStatement);
@@ -601,11 +700,11 @@ EZLanguageParser::IncludeStatementContext* EZLanguageParser::includeStatement() 
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(79);
+    setState(92);
     match(EZLanguageParser::T__2);
-    setState(80);
+    setState(93);
     match(EZLanguageParser::IDENTIFIER);
-    setState(81);
+    setState(94);
     match(EZLanguageParser::T__1);
    
   }
@@ -649,6 +748,14 @@ void EZLanguageParser::FriendStatementContext::exitRule(tree::ParseTreeListener 
     parserListener->exitFriendStatement(this);
 }
 
+
+std::any EZLanguageParser::FriendStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitFriendStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::FriendStatementContext* EZLanguageParser::friendStatement() {
   FriendStatementContext *_localctx = _tracker.createInstance<FriendStatementContext>(_ctx, getState());
   enterRule(_localctx, 8, EZLanguageParser::RuleFriendStatement);
@@ -662,19 +769,19 @@ EZLanguageParser::FriendStatementContext* EZLanguageParser::friendStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(83);
+    setState(96);
     match(EZLanguageParser::T__3);
-    setState(84);
+    setState(97);
     match(EZLanguageParser::IDENTIFIER);
-    setState(85);
+    setState(98);
     match(EZLanguageParser::T__4);
-    setState(86);
+    setState(99);
     match(EZLanguageParser::IDENTIFIER);
-    setState(87);
+    setState(100);
     match(EZLanguageParser::T__5);
-    setState(88);
+    setState(101);
     match(EZLanguageParser::IDENTIFIER);
-    setState(89);
+    setState(102);
     match(EZLanguageParser::T__1);
    
   }
@@ -721,6 +828,14 @@ EZLanguageParser::FunctionDeclarationContext* EZLanguageParser::ClassDeclaration
   return getRuleContext<EZLanguageParser::FunctionDeclarationContext>(i);
 }
 
+std::vector<tree::TerminalNode *> EZLanguageParser::ClassDeclarationContext::COMMA() {
+  return getTokens(EZLanguageParser::COMMA);
+}
+
+tree::TerminalNode* EZLanguageParser::ClassDeclarationContext::COMMA(size_t i) {
+  return getToken(EZLanguageParser::COMMA, i);
+}
+
 
 size_t EZLanguageParser::ClassDeclarationContext::getRuleIndex() const {
   return EZLanguageParser::RuleClassDeclaration;
@@ -738,6 +853,14 @@ void EZLanguageParser::ClassDeclarationContext::exitRule(tree::ParseTreeListener
     parserListener->exitClassDeclaration(this);
 }
 
+
+std::any EZLanguageParser::ClassDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitClassDeclaration(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ClassDeclarationContext* EZLanguageParser::classDeclaration() {
   ClassDeclarationContext *_localctx = _tracker.createInstance<ClassDeclarationContext>(_ctx, getState());
   enterRule(_localctx, 10, EZLanguageParser::RuleClassDeclaration);
@@ -752,73 +875,73 @@ EZLanguageParser::ClassDeclarationContext* EZLanguageParser::classDeclaration() 
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(92);
+    setState(105);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 939524096) != 0)) {
-      setState(91);
+      ((1ULL << _la) & 3758096384) != 0)) {
+      setState(104);
       accessModifier();
     }
-    setState(94);
+    setState(107);
     match(EZLanguageParser::T__6);
-    setState(95);
+    setState(108);
     match(EZLanguageParser::IDENTIFIER);
-    setState(96);
+    setState(109);
     match(EZLanguageParser::T__7);
-    setState(97);
+    setState(110);
     match(EZLanguageParser::T__8);
-    setState(100);
+    setState(113);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EZLanguageParser::T__9) {
-      setState(98);
+      setState(111);
       match(EZLanguageParser::T__9);
-      setState(99);
+      setState(112);
       match(EZLanguageParser::IDENTIFIER);
     }
-    setState(111);
+    setState(124);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if (_la == EZLanguageParser::T__10) {
-      setState(102);
+      setState(115);
       match(EZLanguageParser::T__10);
-      setState(103);
+      setState(116);
       match(EZLanguageParser::IDENTIFIER);
-      setState(108);
+      setState(121);
       _errHandler->sync(this);
       _la = _input->LA(1);
-      while (_la == EZLanguageParser::T__11) {
-        setState(104);
-        match(EZLanguageParser::T__11);
-        setState(105);
+      while (_la == EZLanguageParser::COMMA) {
+        setState(117);
+        match(EZLanguageParser::COMMA);
+        setState(118);
         match(EZLanguageParser::IDENTIFIER);
-        setState(110);
+        setState(123);
         _errHandler->sync(this);
         _la = _input->LA(1);
       }
     }
-    setState(113);
-    match(EZLanguageParser::T__12);
-    setState(118);
+    setState(126);
+    match(EZLanguageParser::T__11);
+    setState(131);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 136230993920) != 0)) {
-      setState(116);
+      ((1ULL << _la) & 544923975680) != 0)) {
+      setState(129);
       _errHandler->sync(this);
       switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 7, _ctx)) {
       case 1: {
-        setState(114);
+        setState(127);
         variableDeclaration();
         break;
       }
 
       case 2: {
-        setState(115);
+        setState(128);
         functionDeclaration();
         break;
       }
@@ -826,12 +949,12 @@ EZLanguageParser::ClassDeclarationContext* EZLanguageParser::classDeclaration() 
       default:
         break;
       }
-      setState(120);
+      setState(133);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(121);
-    match(EZLanguageParser::T__13);
+    setState(134);
+    match(EZLanguageParser::T__12);
    
   }
   catch (RecognitionException &e) {
@@ -882,6 +1005,14 @@ void EZLanguageParser::VariableDeclarationContext::exitRule(tree::ParseTreeListe
     parserListener->exitVariableDeclaration(this);
 }
 
+
+std::any EZLanguageParser::VariableDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitVariableDeclaration(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::VariableDeclarationContext* EZLanguageParser::variableDeclaration() {
   VariableDeclarationContext *_localctx = _tracker.createInstance<VariableDeclarationContext>(_ctx, getState());
   enterRule(_localctx, 12, EZLanguageParser::RuleVariableDeclaration);
@@ -896,30 +1027,219 @@ EZLanguageParser::VariableDeclarationContext* EZLanguageParser::variableDeclarat
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(124);
+    setState(137);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 939524096) != 0)) {
-      setState(123);
+      ((1ULL << _la) & 3758096384) != 0)) {
+      setState(136);
       accessModifier();
     }
-    setState(126);
+    setState(139);
     type();
-    setState(127);
+    setState(140);
     match(EZLanguageParser::IDENTIFIER);
-    setState(130);
+    setState(143);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
-    if (_la == EZLanguageParser::T__14) {
-      setState(128);
-      match(EZLanguageParser::T__14);
-      setState(129);
+    if (_la == EZLanguageParser::T__13) {
+      setState(141);
+      match(EZLanguageParser::T__13);
+      setState(142);
       expression();
     }
-    setState(132);
+    setState(145);
+    match(EZLanguageParser::T__1);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- AssignmentStatementContext ------------------------------------------------------------------
+
+EZLanguageParser::AssignmentStatementContext::AssignmentStatementContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+tree::TerminalNode* EZLanguageParser::AssignmentStatementContext::IDENTIFIER() {
+  return getToken(EZLanguageParser::IDENTIFIER, 0);
+}
+
+EZLanguageParser::ExpressionContext* EZLanguageParser::AssignmentStatementContext::expression() {
+  return getRuleContext<EZLanguageParser::ExpressionContext>(0);
+}
+
+
+size_t EZLanguageParser::AssignmentStatementContext::getRuleIndex() const {
+  return EZLanguageParser::RuleAssignmentStatement;
+}
+
+void EZLanguageParser::AssignmentStatementContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterAssignmentStatement(this);
+}
+
+void EZLanguageParser::AssignmentStatementContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitAssignmentStatement(this);
+}
+
+
+std::any EZLanguageParser::AssignmentStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitAssignmentStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+EZLanguageParser::AssignmentStatementContext* EZLanguageParser::assignmentStatement() {
+  AssignmentStatementContext *_localctx = _tracker.createInstance<AssignmentStatementContext>(_ctx, getState());
+  enterRule(_localctx, 14, EZLanguageParser::RuleAssignmentStatement);
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(147);
+    match(EZLanguageParser::IDENTIFIER);
+    setState(148);
+    match(EZLanguageParser::T__13);
+    setState(149);
+    expression();
+    setState(150);
+    match(EZLanguageParser::T__1);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- BreakStatementContext ------------------------------------------------------------------
+
+EZLanguageParser::BreakStatementContext::BreakStatementContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+
+size_t EZLanguageParser::BreakStatementContext::getRuleIndex() const {
+  return EZLanguageParser::RuleBreakStatement;
+}
+
+void EZLanguageParser::BreakStatementContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterBreakStatement(this);
+}
+
+void EZLanguageParser::BreakStatementContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitBreakStatement(this);
+}
+
+
+std::any EZLanguageParser::BreakStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitBreakStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+EZLanguageParser::BreakStatementContext* EZLanguageParser::breakStatement() {
+  BreakStatementContext *_localctx = _tracker.createInstance<BreakStatementContext>(_ctx, getState());
+  enterRule(_localctx, 16, EZLanguageParser::RuleBreakStatement);
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(152);
+    match(EZLanguageParser::T__14);
+    setState(153);
+    match(EZLanguageParser::T__1);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- ContinueStatementContext ------------------------------------------------------------------
+
+EZLanguageParser::ContinueStatementContext::ContinueStatementContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+
+size_t EZLanguageParser::ContinueStatementContext::getRuleIndex() const {
+  return EZLanguageParser::RuleContinueStatement;
+}
+
+void EZLanguageParser::ContinueStatementContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterContinueStatement(this);
+}
+
+void EZLanguageParser::ContinueStatementContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitContinueStatement(this);
+}
+
+
+std::any EZLanguageParser::ContinueStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitContinueStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+EZLanguageParser::ContinueStatementContext* EZLanguageParser::continueStatement() {
+  ContinueStatementContext *_localctx = _tracker.createInstance<ContinueStatementContext>(_ctx, getState());
+  enterRule(_localctx, 18, EZLanguageParser::RuleContinueStatement);
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(155);
+    match(EZLanguageParser::T__15);
+    setState(156);
     match(EZLanguageParser::T__1);
    
   }
@@ -979,9 +1299,17 @@ void EZLanguageParser::FunctionDeclarationContext::exitRule(tree::ParseTreeListe
     parserListener->exitFunctionDeclaration(this);
 }
 
+
+std::any EZLanguageParser::FunctionDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitFunctionDeclaration(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::FunctionDeclarationContext* EZLanguageParser::functionDeclaration() {
   FunctionDeclarationContext *_localctx = _tracker.createInstance<FunctionDeclarationContext>(_ctx, getState());
-  enterRule(_localctx, 14, EZLanguageParser::RuleFunctionDeclaration);
+  enterRule(_localctx, 20, EZLanguageParser::RuleFunctionDeclaration);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -993,47 +1321,47 @@ EZLanguageParser::FunctionDeclarationContext* EZLanguageParser::functionDeclarat
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(135);
+    setState(159);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 939524096) != 0)) {
-      setState(134);
+      ((1ULL << _la) & 3758096384) != 0)) {
+      setState(158);
       accessModifier();
     }
-    setState(137);
+    setState(161);
     type();
-    setState(138);
+    setState(162);
     match(EZLanguageParser::IDENTIFIER);
-    setState(139);
+    setState(163);
     match(EZLanguageParser::T__7);
-    setState(141);
+    setState(165);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 135291469824) != 0)) {
-      setState(140);
+      ((1ULL << _la) & 541165879296) != 0)) {
+      setState(164);
       parameterList();
     }
-    setState(143);
+    setState(167);
     match(EZLanguageParser::T__8);
-    setState(144);
-    match(EZLanguageParser::T__12);
-    setState(148);
+    setState(168);
+    match(EZLanguageParser::T__11);
+    setState(172);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16628908687642) != 0)) {
-      setState(145);
+      ((1ULL << _la) & 132486332645658) != 0)) {
+      setState(169);
       statement();
-      setState(150);
+      setState(174);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(151);
-    match(EZLanguageParser::T__13);
+    setState(175);
+    match(EZLanguageParser::T__12);
    
   }
   catch (RecognitionException &e) {
@@ -1059,6 +1387,14 @@ EZLanguageParser::ParameterContext* EZLanguageParser::ParameterListContext::para
   return getRuleContext<EZLanguageParser::ParameterContext>(i);
 }
 
+std::vector<tree::TerminalNode *> EZLanguageParser::ParameterListContext::COMMA() {
+  return getTokens(EZLanguageParser::COMMA);
+}
+
+tree::TerminalNode* EZLanguageParser::ParameterListContext::COMMA(size_t i) {
+  return getToken(EZLanguageParser::COMMA, i);
+}
+
 
 size_t EZLanguageParser::ParameterListContext::getRuleIndex() const {
   return EZLanguageParser::RuleParameterList;
@@ -1076,9 +1412,17 @@ void EZLanguageParser::ParameterListContext::exitRule(tree::ParseTreeListener *l
     parserListener->exitParameterList(this);
 }
 
+
+std::any EZLanguageParser::ParameterListContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitParameterList(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ParameterListContext* EZLanguageParser::parameterList() {
   ParameterListContext *_localctx = _tracker.createInstance<ParameterListContext>(_ctx, getState());
-  enterRule(_localctx, 16, EZLanguageParser::RuleParameterList);
+  enterRule(_localctx, 22, EZLanguageParser::RuleParameterList);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1090,17 +1434,17 @@ EZLanguageParser::ParameterListContext* EZLanguageParser::parameterList() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(153);
+    setState(177);
     parameter();
-    setState(158);
+    setState(182);
     _errHandler->sync(this);
     _la = _input->LA(1);
-    while (_la == EZLanguageParser::T__11) {
-      setState(154);
-      match(EZLanguageParser::T__11);
-      setState(155);
+    while (_la == EZLanguageParser::COMMA) {
+      setState(178);
+      match(EZLanguageParser::COMMA);
+      setState(179);
       parameter();
-      setState(160);
+      setState(184);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1146,9 +1490,17 @@ void EZLanguageParser::ParameterContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitParameter(this);
 }
 
+
+std::any EZLanguageParser::ParameterContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitParameter(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ParameterContext* EZLanguageParser::parameter() {
   ParameterContext *_localctx = _tracker.createInstance<ParameterContext>(_ctx, getState());
-  enterRule(_localctx, 18, EZLanguageParser::RuleParameter);
+  enterRule(_localctx, 24, EZLanguageParser::RuleParameter);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1159,10 +1511,83 @@ EZLanguageParser::ParameterContext* EZLanguageParser::parameter() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(161);
+    setState(185);
     type();
-    setState(162);
+    setState(186);
     match(EZLanguageParser::IDENTIFIER);
+   
+  }
+  catch (RecognitionException &e) {
+    _errHandler->reportError(this, e);
+    _localctx->exception = std::current_exception();
+    _errHandler->recover(this, _localctx->exception);
+  }
+
+  return _localctx;
+}
+
+//----------------- ReturnStatementContext ------------------------------------------------------------------
+
+EZLanguageParser::ReturnStatementContext::ReturnStatementContext(ParserRuleContext *parent, size_t invokingState)
+  : ParserRuleContext(parent, invokingState) {
+}
+
+EZLanguageParser::ExpressionContext* EZLanguageParser::ReturnStatementContext::expression() {
+  return getRuleContext<EZLanguageParser::ExpressionContext>(0);
+}
+
+
+size_t EZLanguageParser::ReturnStatementContext::getRuleIndex() const {
+  return EZLanguageParser::RuleReturnStatement;
+}
+
+void EZLanguageParser::ReturnStatementContext::enterRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->enterReturnStatement(this);
+}
+
+void EZLanguageParser::ReturnStatementContext::exitRule(tree::ParseTreeListener *listener) {
+  auto parserListener = dynamic_cast<EZLanguageListener *>(listener);
+  if (parserListener != nullptr)
+    parserListener->exitReturnStatement(this);
+}
+
+
+std::any EZLanguageParser::ReturnStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitReturnStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
+EZLanguageParser::ReturnStatementContext* EZLanguageParser::returnStatement() {
+  ReturnStatementContext *_localctx = _tracker.createInstance<ReturnStatementContext>(_ctx, getState());
+  enterRule(_localctx, 26, EZLanguageParser::RuleReturnStatement);
+  size_t _la = 0;
+
+#if __cplusplus > 201703L
+  auto onExit = finally([=, this] {
+#else
+  auto onExit = finally([=] {
+#endif
+    exitRule();
+  });
+  try {
+    enterOuterAlt(_localctx, 1);
+    setState(188);
+    match(EZLanguageParser::T__16);
+    setState(190);
+    _errHandler->sync(this);
+
+    _la = _input->LA(1);
+    if ((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & 131941395333376) != 0)) {
+      setState(189);
+      expression();
+    }
+    setState(192);
+    match(EZLanguageParser::T__1);
    
   }
   catch (RecognitionException &e) {
@@ -1205,9 +1630,17 @@ void EZLanguageParser::FunctionCallContext::exitRule(tree::ParseTreeListener *li
     parserListener->exitFunctionCall(this);
 }
 
+
+std::any EZLanguageParser::FunctionCallContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitFunctionCall(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::FunctionCallContext* EZLanguageParser::functionCall() {
   FunctionCallContext *_localctx = _tracker.createInstance<FunctionCallContext>(_ctx, getState());
-  enterRule(_localctx, 20, EZLanguageParser::RuleFunctionCall);
+  enterRule(_localctx, 28, EZLanguageParser::RuleFunctionCall);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1219,20 +1652,20 @@ EZLanguageParser::FunctionCallContext* EZLanguageParser::functionCall() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(164);
+    setState(194);
     match(EZLanguageParser::IDENTIFIER);
-    setState(165);
+    setState(195);
     match(EZLanguageParser::T__7);
-    setState(167);
+    setState(197);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16492674416896) != 0)) {
-      setState(166);
+      ((1ULL << _la) & 131941395333376) != 0)) {
+      setState(196);
       argumentList();
     }
-    setState(169);
+    setState(199);
     match(EZLanguageParser::T__8);
    
   }
@@ -1280,9 +1713,17 @@ void EZLanguageParser::FriendFunctionCallContext::exitRule(tree::ParseTreeListen
     parserListener->exitFriendFunctionCall(this);
 }
 
+
+std::any EZLanguageParser::FriendFunctionCallContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitFriendFunctionCall(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::FriendFunctionCallContext* EZLanguageParser::friendFunctionCall() {
   FriendFunctionCallContext *_localctx = _tracker.createInstance<FriendFunctionCallContext>(_ctx, getState());
-  enterRule(_localctx, 22, EZLanguageParser::RuleFriendFunctionCall);
+  enterRule(_localctx, 30, EZLanguageParser::RuleFriendFunctionCall);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1294,24 +1735,24 @@ EZLanguageParser::FriendFunctionCallContext* EZLanguageParser::friendFunctionCal
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(171);
+    setState(201);
     match(EZLanguageParser::IDENTIFIER);
-    setState(172);
-    match(EZLanguageParser::T__15);
-    setState(173);
+    setState(202);
+    match(EZLanguageParser::T__17);
+    setState(203);
     match(EZLanguageParser::IDENTIFIER);
-    setState(174);
+    setState(204);
     match(EZLanguageParser::T__7);
-    setState(176);
+    setState(206);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16492674416896) != 0)) {
-      setState(175);
+      ((1ULL << _la) & 131941395333376) != 0)) {
+      setState(205);
       argumentList();
     }
-    setState(178);
+    setState(208);
     match(EZLanguageParser::T__8);
    
   }
@@ -1338,6 +1779,14 @@ EZLanguageParser::ExpressionContext* EZLanguageParser::ArgumentListContext::expr
   return getRuleContext<EZLanguageParser::ExpressionContext>(i);
 }
 
+std::vector<tree::TerminalNode *> EZLanguageParser::ArgumentListContext::COMMA() {
+  return getTokens(EZLanguageParser::COMMA);
+}
+
+tree::TerminalNode* EZLanguageParser::ArgumentListContext::COMMA(size_t i) {
+  return getToken(EZLanguageParser::COMMA, i);
+}
+
 
 size_t EZLanguageParser::ArgumentListContext::getRuleIndex() const {
   return EZLanguageParser::RuleArgumentList;
@@ -1355,9 +1804,17 @@ void EZLanguageParser::ArgumentListContext::exitRule(tree::ParseTreeListener *li
     parserListener->exitArgumentList(this);
 }
 
+
+std::any EZLanguageParser::ArgumentListContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitArgumentList(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ArgumentListContext* EZLanguageParser::argumentList() {
   ArgumentListContext *_localctx = _tracker.createInstance<ArgumentListContext>(_ctx, getState());
-  enterRule(_localctx, 24, EZLanguageParser::RuleArgumentList);
+  enterRule(_localctx, 32, EZLanguageParser::RuleArgumentList);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1369,17 +1826,17 @@ EZLanguageParser::ArgumentListContext* EZLanguageParser::argumentList() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(180);
+    setState(210);
     expression();
-    setState(185);
+    setState(215);
     _errHandler->sync(this);
     _la = _input->LA(1);
-    while (_la == EZLanguageParser::T__11) {
-      setState(181);
-      match(EZLanguageParser::T__11);
-      setState(182);
+    while (_la == EZLanguageParser::COMMA) {
+      setState(211);
+      match(EZLanguageParser::COMMA);
+      setState(212);
       expression();
-      setState(187);
+      setState(217);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -1425,9 +1882,17 @@ void EZLanguageParser::ControlFlowStatementContext::exitRule(tree::ParseTreeList
     parserListener->exitControlFlowStatement(this);
 }
 
+
+std::any EZLanguageParser::ControlFlowStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitControlFlowStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ControlFlowStatementContext* EZLanguageParser::controlFlowStatement() {
   ControlFlowStatementContext *_localctx = _tracker.createInstance<ControlFlowStatementContext>(_ctx, getState());
-  enterRule(_localctx, 26, EZLanguageParser::RuleControlFlowStatement);
+  enterRule(_localctx, 34, EZLanguageParser::RuleControlFlowStatement);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1437,20 +1902,20 @@ EZLanguageParser::ControlFlowStatementContext* EZLanguageParser::controlFlowStat
     exitRule();
   });
   try {
-    setState(190);
+    setState(220);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
-      case EZLanguageParser::T__16: {
+      case EZLanguageParser::T__18: {
         enterOuterAlt(_localctx, 1);
-        setState(188);
+        setState(218);
         ifStatement();
         break;
       }
 
-      case EZLanguageParser::T__19:
-      case EZLanguageParser::T__20: {
+      case EZLanguageParser::T__21:
+      case EZLanguageParser::T__22: {
         enterOuterAlt(_localctx, 2);
-        setState(189);
+        setState(219);
         loopStatement();
         break;
       }
@@ -1508,9 +1973,17 @@ void EZLanguageParser::IfStatementContext::exitRule(tree::ParseTreeListener *lis
     parserListener->exitIfStatement(this);
 }
 
+
+std::any EZLanguageParser::IfStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitIfStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::IfStatementContext* EZLanguageParser::ifStatement() {
   IfStatementContext *_localctx = _tracker.createInstance<IfStatementContext>(_ctx, getState());
-  enterRule(_localctx, 28, EZLanguageParser::RuleIfStatement);
+  enterRule(_localctx, 36, EZLanguageParser::RuleIfStatement);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1522,82 +1995,82 @@ EZLanguageParser::IfStatementContext* EZLanguageParser::ifStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(192);
-    match(EZLanguageParser::T__16);
-    setState(193);
+    setState(222);
+    match(EZLanguageParser::T__18);
+    setState(223);
     match(EZLanguageParser::T__7);
-    setState(194);
+    setState(224);
     expression();
-    setState(195);
+    setState(225);
     match(EZLanguageParser::T__8);
-    setState(196);
-    match(EZLanguageParser::T__12);
-    setState(200);
+    setState(226);
+    match(EZLanguageParser::T__11);
+    setState(230);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16628908687642) != 0)) {
-      setState(197);
+      ((1ULL << _la) & 132486332645658) != 0)) {
+      setState(227);
       statement();
-      setState(202);
+      setState(232);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(203);
-    match(EZLanguageParser::T__13);
-    setState(219);
+    setState(233);
+    match(EZLanguageParser::T__12);
+    setState(249);
     _errHandler->sync(this);
     _la = _input->LA(1);
-    while (_la == EZLanguageParser::T__17) {
-      setState(204);
-      match(EZLanguageParser::T__17);
-      setState(205);
+    while (_la == EZLanguageParser::T__19) {
+      setState(234);
+      match(EZLanguageParser::T__19);
+      setState(235);
       match(EZLanguageParser::T__7);
-      setState(206);
+      setState(236);
       expression();
-      setState(207);
+      setState(237);
       match(EZLanguageParser::T__8);
-      setState(208);
-      match(EZLanguageParser::T__12);
-      setState(212);
+      setState(238);
+      match(EZLanguageParser::T__11);
+      setState(242);
       _errHandler->sync(this);
       _la = _input->LA(1);
       while ((((_la & ~ 0x3fULL) == 0) &&
-        ((1ULL << _la) & 16628908687642) != 0)) {
-        setState(209);
+        ((1ULL << _la) & 132486332645658) != 0)) {
+        setState(239);
         statement();
-        setState(214);
+        setState(244);
         _errHandler->sync(this);
         _la = _input->LA(1);
       }
-      setState(215);
-      match(EZLanguageParser::T__13);
-      setState(221);
+      setState(245);
+      match(EZLanguageParser::T__12);
+      setState(251);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(231);
+    setState(261);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
-    if (_la == EZLanguageParser::T__18) {
-      setState(222);
-      match(EZLanguageParser::T__18);
-      setState(223);
-      match(EZLanguageParser::T__12);
-      setState(227);
+    if (_la == EZLanguageParser::T__20) {
+      setState(252);
+      match(EZLanguageParser::T__20);
+      setState(253);
+      match(EZLanguageParser::T__11);
+      setState(257);
       _errHandler->sync(this);
       _la = _input->LA(1);
       while ((((_la & ~ 0x3fULL) == 0) &&
-        ((1ULL << _la) & 16628908687642) != 0)) {
-        setState(224);
+        ((1ULL << _la) & 132486332645658) != 0)) {
+        setState(254);
         statement();
-        setState(229);
+        setState(259);
         _errHandler->sync(this);
         _la = _input->LA(1);
       }
-      setState(230);
-      match(EZLanguageParser::T__13);
+      setState(260);
+      match(EZLanguageParser::T__12);
     }
    
   }
@@ -1645,9 +2118,17 @@ void EZLanguageParser::LoopStatementContext::exitRule(tree::ParseTreeListener *l
     parserListener->exitLoopStatement(this);
 }
 
+
+std::any EZLanguageParser::LoopStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitLoopStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::LoopStatementContext* EZLanguageParser::loopStatement() {
   LoopStatementContext *_localctx = _tracker.createInstance<LoopStatementContext>(_ctx, getState());
-  enterRule(_localctx, 30, EZLanguageParser::RuleLoopStatement);
+  enterRule(_localctx, 38, EZLanguageParser::RuleLoopStatement);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1659,45 +2140,45 @@ EZLanguageParser::LoopStatementContext* EZLanguageParser::loopStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(233);
+    setState(263);
     _la = _input->LA(1);
-    if (!(_la == EZLanguageParser::T__19
+    if (!(_la == EZLanguageParser::T__21
 
-    || _la == EZLanguageParser::T__20)) {
+    || _la == EZLanguageParser::T__22)) {
     _errHandler->recoverInline(this);
     }
     else {
       _errHandler->reportMatch(this);
       consume();
     }
-    setState(234);
+    setState(264);
     match(EZLanguageParser::T__7);
-    setState(236);
+    setState(266);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
     if ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16492674416896) != 0)) {
-      setState(235);
+      ((1ULL << _la) & 131941395333376) != 0)) {
+      setState(265);
       expression();
     }
-    setState(238);
+    setState(268);
     match(EZLanguageParser::T__8);
-    setState(239);
-    match(EZLanguageParser::T__12);
-    setState(243);
+    setState(269);
+    match(EZLanguageParser::T__11);
+    setState(273);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16628908687642) != 0)) {
-      setState(240);
+      ((1ULL << _la) & 132486332645658) != 0)) {
+      setState(270);
       statement();
-      setState(245);
+      setState(275);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(246);
-    match(EZLanguageParser::T__13);
+    setState(276);
+    match(EZLanguageParser::T__12);
    
   }
   catch (RecognitionException &e) {
@@ -1748,9 +2229,17 @@ void EZLanguageParser::ForeachStatementContext::exitRule(tree::ParseTreeListener
     parserListener->exitForeachStatement(this);
 }
 
+
+std::any EZLanguageParser::ForeachStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitForeachStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ForeachStatementContext* EZLanguageParser::foreachStatement() {
   ForeachStatementContext *_localctx = _tracker.createInstance<ForeachStatementContext>(_ctx, getState());
-  enterRule(_localctx, 32, EZLanguageParser::RuleForeachStatement);
+  enterRule(_localctx, 40, EZLanguageParser::RuleForeachStatement);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1762,29 +2251,29 @@ EZLanguageParser::ForeachStatementContext* EZLanguageParser::foreachStatement() 
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(248);
-    match(EZLanguageParser::T__20);
-    setState(249);
+    setState(278);
+    match(EZLanguageParser::T__22);
+    setState(279);
     match(EZLanguageParser::IDENTIFIER);
-    setState(250);
-    match(EZLanguageParser::T__21);
-    setState(251);
+    setState(280);
+    match(EZLanguageParser::T__23);
+    setState(281);
     match(EZLanguageParser::IDENTIFIER);
-    setState(252);
-    match(EZLanguageParser::T__12);
-    setState(256);
+    setState(282);
+    match(EZLanguageParser::T__11);
+    setState(286);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16628908687642) != 0)) {
-      setState(253);
+      ((1ULL << _la) & 132486332645658) != 0)) {
+      setState(283);
       statement();
-      setState(258);
+      setState(288);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(259);
-    match(EZLanguageParser::T__13);
+    setState(289);
+    match(EZLanguageParser::T__12);
    
   }
   catch (RecognitionException &e) {
@@ -1831,9 +2320,17 @@ void EZLanguageParser::TryCatchStatementContext::exitRule(tree::ParseTreeListene
     parserListener->exitTryCatchStatement(this);
 }
 
+
+std::any EZLanguageParser::TryCatchStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitTryCatchStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::TryCatchStatementContext* EZLanguageParser::tryCatchStatement() {
   TryCatchStatementContext *_localctx = _tracker.createInstance<TryCatchStatementContext>(_ctx, getState());
-  enterRule(_localctx, 34, EZLanguageParser::RuleTryCatchStatement);
+  enterRule(_localctx, 42, EZLanguageParser::RuleTryCatchStatement);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -1845,74 +2342,74 @@ EZLanguageParser::TryCatchStatementContext* EZLanguageParser::tryCatchStatement(
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(261);
-    match(EZLanguageParser::T__22);
-    setState(262);
-    match(EZLanguageParser::T__12);
-    setState(266);
+    setState(291);
+    match(EZLanguageParser::T__24);
+    setState(292);
+    match(EZLanguageParser::T__11);
+    setState(296);
     _errHandler->sync(this);
     _la = _input->LA(1);
     while ((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 16628908687642) != 0)) {
-      setState(263);
+      ((1ULL << _la) & 132486332645658) != 0)) {
+      setState(293);
       statement();
-      setState(268);
+      setState(298);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
-    setState(269);
-    match(EZLanguageParser::T__13);
-    setState(282);
+    setState(299);
+    match(EZLanguageParser::T__12);
+    setState(312);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
-    if (_la == EZLanguageParser::T__23) {
-      setState(270);
-      match(EZLanguageParser::T__23);
-      setState(271);
+    if (_la == EZLanguageParser::T__25) {
+      setState(300);
+      match(EZLanguageParser::T__25);
+      setState(301);
       match(EZLanguageParser::T__7);
-      setState(272);
+      setState(302);
       match(EZLanguageParser::IDENTIFIER);
-      setState(273);
+      setState(303);
       match(EZLanguageParser::T__8);
-      setState(274);
-      match(EZLanguageParser::T__12);
-      setState(278);
+      setState(304);
+      match(EZLanguageParser::T__11);
+      setState(308);
       _errHandler->sync(this);
       _la = _input->LA(1);
       while ((((_la & ~ 0x3fULL) == 0) &&
-        ((1ULL << _la) & 16628908687642) != 0)) {
-        setState(275);
+        ((1ULL << _la) & 132486332645658) != 0)) {
+        setState(305);
         statement();
-        setState(280);
+        setState(310);
         _errHandler->sync(this);
         _la = _input->LA(1);
       }
-      setState(281);
-      match(EZLanguageParser::T__13);
+      setState(311);
+      match(EZLanguageParser::T__12);
     }
-    setState(293);
+    setState(323);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
-    if (_la == EZLanguageParser::T__24) {
-      setState(284);
-      match(EZLanguageParser::T__24);
-      setState(285);
-      match(EZLanguageParser::T__12);
-      setState(289);
+    if (_la == EZLanguageParser::T__26) {
+      setState(314);
+      match(EZLanguageParser::T__26);
+      setState(315);
+      match(EZLanguageParser::T__11);
+      setState(319);
       _errHandler->sync(this);
       _la = _input->LA(1);
       while ((((_la & ~ 0x3fULL) == 0) &&
-        ((1ULL << _la) & 16628908687642) != 0)) {
-        setState(286);
+        ((1ULL << _la) & 132486332645658) != 0)) {
+        setState(316);
         statement();
-        setState(291);
+        setState(321);
         _errHandler->sync(this);
         _la = _input->LA(1);
       }
-      setState(292);
-      match(EZLanguageParser::T__13);
+      setState(322);
+      match(EZLanguageParser::T__12);
     }
    
   }
@@ -1956,9 +2453,17 @@ void EZLanguageParser::RunStatementContext::exitRule(tree::ParseTreeListener *li
     parserListener->exitRunStatement(this);
 }
 
+
+std::any EZLanguageParser::RunStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitRunStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::RunStatementContext* EZLanguageParser::runStatement() {
   RunStatementContext *_localctx = _tracker.createInstance<RunStatementContext>(_ctx, getState());
-  enterRule(_localctx, 36, EZLanguageParser::RuleRunStatement);
+  enterRule(_localctx, 44, EZLanguageParser::RuleRunStatement);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1969,15 +2474,15 @@ EZLanguageParser::RunStatementContext* EZLanguageParser::runStatement() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(295);
-    match(EZLanguageParser::T__25);
-    setState(296);
+    setState(325);
+    match(EZLanguageParser::T__27);
+    setState(326);
     match(EZLanguageParser::IDENTIFIER);
-    setState(297);
+    setState(327);
     match(EZLanguageParser::T__4);
-    setState(298);
+    setState(328);
     match(EZLanguageParser::STRING);
-    setState(299);
+    setState(329);
     match(EZLanguageParser::T__1);
    
   }
@@ -2017,9 +2522,17 @@ void EZLanguageParser::ExpressionStatementContext::exitRule(tree::ParseTreeListe
     parserListener->exitExpressionStatement(this);
 }
 
+
+std::any EZLanguageParser::ExpressionStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitExpressionStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ExpressionStatementContext* EZLanguageParser::expressionStatement() {
   ExpressionStatementContext *_localctx = _tracker.createInstance<ExpressionStatementContext>(_ctx, getState());
-  enterRule(_localctx, 38, EZLanguageParser::RuleExpressionStatement);
+  enterRule(_localctx, 46, EZLanguageParser::RuleExpressionStatement);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2030,9 +2543,9 @@ EZLanguageParser::ExpressionStatementContext* EZLanguageParser::expressionStatem
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(301);
+    setState(331);
     expression();
-    setState(302);
+    setState(332);
     match(EZLanguageParser::T__1);
    
   }
@@ -2067,6 +2580,22 @@ tree::TerminalNode* EZLanguageParser::ExpressionContext::OPERATOR(size_t i) {
   return getToken(EZLanguageParser::OPERATOR, i);
 }
 
+std::vector<tree::TerminalNode *> EZLanguageParser::ExpressionContext::LT() {
+  return getTokens(EZLanguageParser::LT);
+}
+
+tree::TerminalNode* EZLanguageParser::ExpressionContext::LT(size_t i) {
+  return getToken(EZLanguageParser::LT, i);
+}
+
+std::vector<tree::TerminalNode *> EZLanguageParser::ExpressionContext::GT() {
+  return getTokens(EZLanguageParser::GT);
+}
+
+tree::TerminalNode* EZLanguageParser::ExpressionContext::GT(size_t i) {
+  return getToken(EZLanguageParser::GT, i);
+}
+
 
 size_t EZLanguageParser::ExpressionContext::getRuleIndex() const {
   return EZLanguageParser::RuleExpression;
@@ -2084,9 +2613,17 @@ void EZLanguageParser::ExpressionContext::exitRule(tree::ParseTreeListener *list
     parserListener->exitExpression(this);
 }
 
+
+std::any EZLanguageParser::ExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitExpression(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::ExpressionContext* EZLanguageParser::expression() {
   ExpressionContext *_localctx = _tracker.createInstance<ExpressionContext>(_ctx, getState());
-  enterRule(_localctx, 40, EZLanguageParser::RuleExpression);
+  enterRule(_localctx, 48, EZLanguageParser::RuleExpression);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2098,17 +2635,27 @@ EZLanguageParser::ExpressionContext* EZLanguageParser::expression() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(304);
+    setState(334);
     primaryExpression();
-    setState(309);
+    setState(339);
     _errHandler->sync(this);
     _la = _input->LA(1);
-    while (_la == EZLanguageParser::OPERATOR) {
-      setState(305);
-      match(EZLanguageParser::OPERATOR);
-      setState(306);
+    while ((((_la & ~ 0x3fULL) == 0) &&
+      ((1ULL << _la) & 3848290697216) != 0)) {
+      setState(335);
+      antlrcpp::downCast<ExpressionContext *>(_localctx)->op = _input->LT(1);
+      _la = _input->LA(1);
+      if (!((((_la & ~ 0x3fULL) == 0) &&
+        ((1ULL << _la) & 3848290697216) != 0))) {
+        antlrcpp::downCast<ExpressionContext *>(_localctx)->op = _errHandler->recoverInline(this);
+      }
+      else {
+        _errHandler->reportMatch(this);
+        consume();
+      }
+      setState(336);
       primaryExpression();
-      setState(311);
+      setState(341);
       _errHandler->sync(this);
       _la = _input->LA(1);
     }
@@ -2166,9 +2713,17 @@ void EZLanguageParser::PrimaryExpressionContext::exitRule(tree::ParseTreeListene
     parserListener->exitPrimaryExpression(this);
 }
 
+
+std::any EZLanguageParser::PrimaryExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitPrimaryExpression(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::PrimaryExpressionContext* EZLanguageParser::primaryExpression() {
   PrimaryExpressionContext *_localctx = _tracker.createInstance<PrimaryExpressionContext>(_ctx, getState());
-  enterRule(_localctx, 42, EZLanguageParser::RulePrimaryExpression);
+  enterRule(_localctx, 50, EZLanguageParser::RulePrimaryExpression);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2178,44 +2733,44 @@ EZLanguageParser::PrimaryExpressionContext* EZLanguageParser::primaryExpression(
     exitRule();
   });
   try {
-    setState(320);
+    setState(350);
     _errHandler->sync(this);
-    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 33, _ctx)) {
+    switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 34, _ctx)) {
     case 1: {
       enterOuterAlt(_localctx, 1);
-      setState(312);
+      setState(342);
       match(EZLanguageParser::IDENTIFIER);
       break;
     }
 
     case 2: {
       enterOuterAlt(_localctx, 2);
-      setState(313);
+      setState(343);
       literal();
       break;
     }
 
     case 3: {
       enterOuterAlt(_localctx, 3);
-      setState(314);
+      setState(344);
       functionCall();
       break;
     }
 
     case 4: {
       enterOuterAlt(_localctx, 4);
-      setState(315);
+      setState(345);
       friendFunctionCall();
       break;
     }
 
     case 5: {
       enterOuterAlt(_localctx, 5);
-      setState(316);
+      setState(346);
       match(EZLanguageParser::T__7);
-      setState(317);
+      setState(347);
       expression();
-      setState(318);
+      setState(348);
       match(EZLanguageParser::T__8);
       break;
     }
@@ -2269,9 +2824,17 @@ void EZLanguageParser::LiteralContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitLiteral(this);
 }
 
+
+std::any EZLanguageParser::LiteralContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitLiteral(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::LiteralContext* EZLanguageParser::literal() {
   LiteralContext *_localctx = _tracker.createInstance<LiteralContext>(_ctx, getState());
-  enterRule(_localctx, 44, EZLanguageParser::RuleLiteral);
+  enterRule(_localctx, 52, EZLanguageParser::RuleLiteral);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2283,10 +2846,10 @@ EZLanguageParser::LiteralContext* EZLanguageParser::literal() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(322);
+    setState(352);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 14293651161088) != 0))) {
+      ((1ULL << _la) & 114349209288704) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -2327,9 +2890,17 @@ void EZLanguageParser::AccessModifierContext::exitRule(tree::ParseTreeListener *
     parserListener->exitAccessModifier(this);
 }
 
+
+std::any EZLanguageParser::AccessModifierContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitAccessModifier(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::AccessModifierContext* EZLanguageParser::accessModifier() {
   AccessModifierContext *_localctx = _tracker.createInstance<AccessModifierContext>(_ctx, getState());
-  enterRule(_localctx, 46, EZLanguageParser::RuleAccessModifier);
+  enterRule(_localctx, 54, EZLanguageParser::RuleAccessModifier);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2341,10 +2912,10 @@ EZLanguageParser::AccessModifierContext* EZLanguageParser::accessModifier() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(324);
+    setState(354);
     _la = _input->LA(1);
     if (!((((_la & ~ 0x3fULL) == 0) &&
-      ((1ULL << _la) & 939524096) != 0))) {
+      ((1ULL << _la) & 3758096384) != 0))) {
     _errHandler->recoverInline(this);
     }
     else {
@@ -2389,9 +2960,17 @@ void EZLanguageParser::TypeContext::exitRule(tree::ParseTreeListener *listener) 
     parserListener->exitType(this);
 }
 
+
+std::any EZLanguageParser::TypeContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitType(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::TypeContext* EZLanguageParser::type() {
   TypeContext *_localctx = _tracker.createInstance<TypeContext>(_ctx, getState());
-  enterRule(_localctx, 48, EZLanguageParser::RuleType);
+  enterRule(_localctx, 56, EZLanguageParser::RuleType);
   size_t _la = 0;
 
 #if __cplusplus > 201703L
@@ -2403,15 +2982,15 @@ EZLanguageParser::TypeContext* EZLanguageParser::type() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(326);
+    setState(356);
     baseType();
-    setState(328);
+    setState(358);
     _errHandler->sync(this);
 
     _la = _input->LA(1);
-    if (_la == EZLanguageParser::T__29) {
-      setState(327);
-      match(EZLanguageParser::T__29);
+    if (_la == EZLanguageParser::T__31) {
+      setState(357);
+      match(EZLanguageParser::T__31);
     }
    
   }
@@ -2451,9 +3030,17 @@ void EZLanguageParser::BaseTypeContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitBaseType(this);
 }
 
+
+std::any EZLanguageParser::BaseTypeContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitBaseType(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::BaseTypeContext* EZLanguageParser::baseType() {
   BaseTypeContext *_localctx = _tracker.createInstance<BaseTypeContext>(_ctx, getState());
-  enterRule(_localctx, 50, EZLanguageParser::RuleBaseType);
+  enterRule(_localctx, 58, EZLanguageParser::RuleBaseType);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2463,47 +3050,47 @@ EZLanguageParser::BaseTypeContext* EZLanguageParser::baseType() {
     exitRule();
   });
   try {
-    setState(336);
+    setState(366);
     _errHandler->sync(this);
     switch (_input->LA(1)) {
-      case EZLanguageParser::T__30: {
-        enterOuterAlt(_localctx, 1);
-        setState(330);
-        match(EZLanguageParser::T__30);
-        break;
-      }
-
-      case EZLanguageParser::T__31: {
-        enterOuterAlt(_localctx, 2);
-        setState(331);
-        match(EZLanguageParser::T__31);
-        break;
-      }
-
       case EZLanguageParser::T__32: {
-        enterOuterAlt(_localctx, 3);
-        setState(332);
+        enterOuterAlt(_localctx, 1);
+        setState(360);
         match(EZLanguageParser::T__32);
         break;
       }
 
       case EZLanguageParser::T__33: {
-        enterOuterAlt(_localctx, 4);
-        setState(333);
+        enterOuterAlt(_localctx, 2);
+        setState(361);
         match(EZLanguageParser::T__33);
         break;
       }
 
       case EZLanguageParser::T__34: {
-        enterOuterAlt(_localctx, 5);
-        setState(334);
+        enterOuterAlt(_localctx, 3);
+        setState(362);
         match(EZLanguageParser::T__34);
         break;
       }
 
       case EZLanguageParser::T__35: {
+        enterOuterAlt(_localctx, 4);
+        setState(363);
+        match(EZLanguageParser::T__35);
+        break;
+      }
+
+      case EZLanguageParser::T__36: {
+        enterOuterAlt(_localctx, 5);
+        setState(364);
+        match(EZLanguageParser::T__36);
+        break;
+      }
+
+      case EZLanguageParser::T__37: {
         enterOuterAlt(_localctx, 6);
-        setState(335);
+        setState(365);
         mapType();
         break;
       }
@@ -2528,12 +3115,24 @@ EZLanguageParser::MapTypeContext::MapTypeContext(ParserRuleContext *parent, size
   : ParserRuleContext(parent, invokingState) {
 }
 
+tree::TerminalNode* EZLanguageParser::MapTypeContext::LT() {
+  return getToken(EZLanguageParser::LT, 0);
+}
+
 std::vector<EZLanguageParser::BaseTypeContext *> EZLanguageParser::MapTypeContext::baseType() {
   return getRuleContexts<EZLanguageParser::BaseTypeContext>();
 }
 
 EZLanguageParser::BaseTypeContext* EZLanguageParser::MapTypeContext::baseType(size_t i) {
   return getRuleContext<EZLanguageParser::BaseTypeContext>(i);
+}
+
+tree::TerminalNode* EZLanguageParser::MapTypeContext::COMMA() {
+  return getToken(EZLanguageParser::COMMA, 0);
+}
+
+tree::TerminalNode* EZLanguageParser::MapTypeContext::GT() {
+  return getToken(EZLanguageParser::GT, 0);
 }
 
 
@@ -2553,9 +3152,17 @@ void EZLanguageParser::MapTypeContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitMapType(this);
 }
 
+
+std::any EZLanguageParser::MapTypeContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<EZLanguageVisitor*>(visitor))
+    return parserVisitor->visitMapType(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 EZLanguageParser::MapTypeContext* EZLanguageParser::mapType() {
   MapTypeContext *_localctx = _tracker.createInstance<MapTypeContext>(_ctx, getState());
-  enterRule(_localctx, 52, EZLanguageParser::RuleMapType);
+  enterRule(_localctx, 60, EZLanguageParser::RuleMapType);
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -2566,18 +3173,18 @@ EZLanguageParser::MapTypeContext* EZLanguageParser::mapType() {
   });
   try {
     enterOuterAlt(_localctx, 1);
-    setState(338);
-    match(EZLanguageParser::T__35);
-    setState(339);
-    match(EZLanguageParser::T__36);
-    setState(340);
-    baseType();
-    setState(341);
-    match(EZLanguageParser::T__11);
-    setState(342);
-    baseType();
-    setState(343);
+    setState(368);
     match(EZLanguageParser::T__37);
+    setState(369);
+    match(EZLanguageParser::LT);
+    setState(370);
+    baseType();
+    setState(371);
+    match(EZLanguageParser::COMMA);
+    setState(372);
+    baseType();
+    setState(373);
+    match(EZLanguageParser::GT);
    
   }
   catch (RecognitionException &e) {

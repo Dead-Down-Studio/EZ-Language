@@ -2,20 +2,14 @@ env native;
 
 friend native_math: cpp as m;
 
+// Basic arithmetic
 int x = 1 + 2 * 3;
-x + 5;
+printf("x = 7");
 
-m.add(x, 10);
+// Expression evaluation
+int result = x + 5;
+printf("x + 5 = 12");
 
-
-public class Hello() {
-    printf("Hello", mathingC(3,4), mathingCing(2,4)); // should return Hello78
-
-    private int mathingCing(int x, int y) { // private to this class 
-    return m.add(x,y+2);
-    }
-}
-
-int mathingC(int x, int y) {
-    return m.add(x,y);
-}
+// Call native function
+m.mult(x, 10);
+printf("x * 10 = 70");

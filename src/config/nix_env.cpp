@@ -71,3 +71,18 @@ int runInNixEnvWithArgs(const fs::path &envFile, const std::vector<std::string> 
     cmd << "\"";
     return std::system(cmd.str().c_str());
 }
+
+bool installNixForCurrentOS() {
+#if defined(__APPLE__) || defined(__linux__)
+    const char *installer = "curl -L https://nixos.org/nix/install | sh -s -- --daemon";
+    int rc = std::system(installer);
+    if (rc != 0) {
+        std::cerr << "Failed to install Nix (installer exited with code " << rc << ")." << '\n';
+        return false;
+    }
+    return true;
+#else
+    std::cerr << "Nix installation automation is not supported on this OS.\n";
+    return false;
+#endif
+}

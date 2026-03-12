@@ -21,6 +21,7 @@ struct EZConfig {
     // Build settings
     std::string outputDir = ".ezenv/build";
     bool verboseBuild = false;
+    bool noEnv = false;
     
     // Load config from file (returns false if file doesn't exist or has errors)
     bool loadFromFile(const std::filesystem::path &path);

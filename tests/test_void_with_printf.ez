@@ -1,0 +1,7 @@
+env native;
+
+void hello() {
+    printf("test");
+}
+
+hello();

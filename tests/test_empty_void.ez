@@ -1,0 +1,6 @@
+env native;
+
+void hello() {
+}
+
+hello();

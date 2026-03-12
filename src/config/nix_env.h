@@ -28,3 +28,6 @@ int runInNixEnv(const std::filesystem::path &envFile, const std::string &command
 
 // Re-exec inside nix-shell with properly escaped argv array (returns process exit code)
 int runInNixEnvWithArgs(const std::filesystem::path &envFile, const std::vector<std::string> &args);
+
+// Attempt to install Nix using the official installer for the current OS
+bool installNixForCurrentOS();

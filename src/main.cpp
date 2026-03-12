@@ -136,12 +136,49 @@ int main(int argc, const char *argv[])
     }
 
     const fs::path projectRoot = sourcePath.parent_path();
-    const bool nixPresent = nixAvailable();
+    EZConfig config = EZConfig::loadWithFallback(projectRoot);
+
+    EnvDefaults envDefaults = builtinNativeDefaults();
+    envDefaults.cCompiler = config.cCompiler;
+    envDefaults.cppCompiler = config.cppCompiler;
+    envDefaults.pythonExecutable = config.pythonExecutable;
+    envDefaults.cStandard = config.cStandard;
+    envDefaults.cppStandard = config.cppStandard;
+    envDefaults.outputDir = config.outputDir;
+
+    // Config file can request verbose output or skipping environment setup
+    verbose = verbose || config.verboseBuild;
+    skipEnv = skipEnv || config.noEnv;
+
+    bool nixPresent = skipEnv ? false : nixAvailable();
     const bool alreadyInNix = insideNixShell();
 
+    if (!nixPresent && !skipEnv) {
+        std::cerr << "nix is not installed do you want to install it ? [Y/N] " << std::flush;
+        std::string choice;
+        if (!std::getline(std::cin, choice)) {
+            return 1;
+        }
+        const char sel = choice.empty() ? 'N' : choice[0];
+        if (sel == 'y' || sel == 'Y') {
+            if (!installNixForCurrentOS()) {
+                std::cerr << "Nix installation failed. use --no-env to run the code without the nix support" << '\n';
+                return 1;
+            }
+            nixPresent = nixAvailable();
+            if (!nixPresent) {
+                std::cerr << "Nix installation completed but nix-shell is still not detected in this session." << '\n';
+                std::cerr << "use --no-env to run the code without the nix support" << '\n';
+                return 1;
+            }
+        } else {
+            std::cerr << "use --no-env to run the code without the nix support" << '\n';
+            skipEnv = true;
+        }
+    }
+
     std::optional<NixEnvInfo> resolvedEnv;
-    EnvDefaults envDefaults = builtinNativeDefaults();
-    if (nixPresent) {
+    if (nixPresent && !skipEnv) {
         if (auto projectEnv = findProjectEnv(projectRoot)) {
             resolvedEnv = NixEnvInfo{*projectEnv, "project"};
         } else if (auto builtinEnv = findBuiltinEnv("native", projectRoot)) {
@@ -158,6 +195,10 @@ int main(int argc, const char *argv[])
             std::cout << "env-file: none" << '\n';
         }
         return resolvedEnv ? 0 : 1;
+    }
+
+    if (skipEnv && prepareEnv) {
+        return 0;
     }
 
     if (prepareEnv) {
@@ -235,11 +276,8 @@ int main(int argc, const char *argv[])
         }
     }
 
-    // Semantic checks (access control, invalid modifiers)
-    runSemanticChecks(program, diagnostics);
-
-    // Load configuration (project .ezconfig -> ~/.ezconfig -> defaults)
-    EZConfig config = EZConfig::loadWithFallback(listener.getBaseDirectory());
+    // Semantic checks (types, access control, returns)
+    SemanticModel semanticModel = runSemanticChecks(program, diagnostics);
 
     if (resolvedEnv && resolvedEnv->envSource == "builtin") {
         std::vector<std::string> conflicts;
@@ -372,7 +410,7 @@ int main(int argc, const char *argv[])
 
         std::vector<Diagnostic> cgDiags;
         CCodeGenerator codegen;
-        const std::string cSrc = codegen.generate(program, cgDiags);
+        const std::string cSrc = codegen.generate(program, semanticModel, cgDiags);
         if (!cgDiags.empty()) {
             printDiagnostics(cgDiags, sourcePath);
             return 1;
@@ -419,7 +457,7 @@ int main(int argc, const char *argv[])
         libMap.emplace(e.module.alias, e.dylib);
     }
 
-    SimpleInterpreter interpreter(std::cout, std::move(libMap), verbose);
+    SimpleInterpreter interpreter(std::cout, std::move(libMap), verbose, semanticModel);
     if (!interpreter.execute(program, diagnostics)) {
         printDiagnostics(diagnostics, sourcePath);
         return 1;

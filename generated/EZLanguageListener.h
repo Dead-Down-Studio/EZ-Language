@@ -1,5 +1,5 @@
 
-// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
+// Generated from EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -35,6 +35,15 @@ public:
   virtual void enterVariableDeclaration(EZLanguageParser::VariableDeclarationContext *ctx) = 0;
   virtual void exitVariableDeclaration(EZLanguageParser::VariableDeclarationContext *ctx) = 0;
 
+  virtual void enterAssignmentStatement(EZLanguageParser::AssignmentStatementContext *ctx) = 0;
+  virtual void exitAssignmentStatement(EZLanguageParser::AssignmentStatementContext *ctx) = 0;
+
+  virtual void enterBreakStatement(EZLanguageParser::BreakStatementContext *ctx) = 0;
+  virtual void exitBreakStatement(EZLanguageParser::BreakStatementContext *ctx) = 0;
+
+  virtual void enterContinueStatement(EZLanguageParser::ContinueStatementContext *ctx) = 0;
+  virtual void exitContinueStatement(EZLanguageParser::ContinueStatementContext *ctx) = 0;
+
   virtual void enterFunctionDeclaration(EZLanguageParser::FunctionDeclarationContext *ctx) = 0;
   virtual void exitFunctionDeclaration(EZLanguageParser::FunctionDeclarationContext *ctx) = 0;
 
@@ -43,6 +52,9 @@ public:
 
   virtual void enterParameter(EZLanguageParser::ParameterContext *ctx) = 0;
   virtual void exitParameter(EZLanguageParser::ParameterContext *ctx) = 0;
+
+  virtual void enterReturnStatement(EZLanguageParser::ReturnStatementContext *ctx) = 0;
+  virtual void exitReturnStatement(EZLanguageParser::ReturnStatementContext *ctx) = 0;
 
   virtual void enterFunctionCall(EZLanguageParser::FunctionCallContext *ctx) = 0;
   virtual void exitFunctionCall(EZLanguageParser::FunctionCallContext *ctx) = 0;

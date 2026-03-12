@@ -1,0 +1,20 @@
+env native;
+
+// Test function returning boolean
+boolean isPositive(int n) {
+    return n > 0;
+}
+
+boolean isTrue() {
+    return true;
+}
+
+boolean isFalse() {
+    return false;
+}
+
+// Call boolean functions
+isPositive(5);
+isPositive(0);
+isTrue();
+isFalse();

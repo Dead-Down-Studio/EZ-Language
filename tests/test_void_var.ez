@@ -1,0 +1,7 @@
+env native;
+
+void test() {
+    int x = 5;
+}
+
+test();

@@ -1,2 +1,0 @@
-env native;
-print("Hello EZ");

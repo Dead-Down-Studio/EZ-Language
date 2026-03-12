@@ -30,3 +30,5 @@ standard = "c++17"
 output_dir = ".ezbuild"
 # Verbose build output (default: false)
 verbose = false
+# skip Nix env activation when set (default : false)
+no_env = false
