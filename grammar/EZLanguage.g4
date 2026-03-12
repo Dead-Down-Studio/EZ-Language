@@ -47,7 +47,16 @@ argumentList: expression (',' expression)*;
 
 controlFlowStatement: ifStatement | loopStatement;
 ifStatement: 'if' '(' expression ')' '{' statement* '}' ('else if' '(' expression ')' '{' statement* '}')* ('else' '{' statement* '}')?;
-loopStatement: ('while' | 'for') '(' expression? ')' '{' statement* '}';
+loopStatement: whileLoop | forLoop;
+whileLoop: 'while' '(' expression? ')' '{' statement* '}';
+forLoop: 'for' '(' forInit? ';' expression? ';' forUpdate? ')' '{' statement* '}';
+forInit: type IDENTIFIER ('=' expression)? #forInitVarDecl
+    | IDENTIFIER '=' expression         #forInitAssign
+    | expression                        #forInitExpr
+    ;
+forUpdate: IDENTIFIER '=' expression       #forUpdateAssign
+      | expression                      #forUpdateExpr
+      ;
 foreachStatement: 'for' IDENTIFIER 'in' IDENTIFIER '{' statement* '}';
 
 tryCatchStatement: 'try' '{' statement* '}' ('catch' '(' IDENTIFIER ')' '{' statement* '}')? ('finally' '{' statement* '}')?;

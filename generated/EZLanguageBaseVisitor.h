@@ -1,5 +1,5 @@
 
-// Generated from EZLanguage.g4 by ANTLR 4.13.2
+// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -92,6 +92,34 @@ public:
   }
 
   virtual std::any visitLoopStatement(EZLanguageParser::LoopStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitWhileLoop(EZLanguageParser::WhileLoopContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitForLoop(EZLanguageParser::ForLoopContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitForInitVarDecl(EZLanguageParser::ForInitVarDeclContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitForInitAssign(EZLanguageParser::ForInitAssignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitForInitExpr(EZLanguageParser::ForInitExprContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitForUpdateAssign(EZLanguageParser::ForUpdateAssignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitForUpdateExpr(EZLanguageParser::ForUpdateExprContext *ctx) override {
     return visitChildren(ctx);
   }
 

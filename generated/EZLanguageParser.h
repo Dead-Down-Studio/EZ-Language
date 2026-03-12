@@ -1,5 +1,5 @@
 
-// Generated from EZLanguage.g4 by ANTLR 4.13.2
+// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -29,10 +29,11 @@ public:
     RuleFunctionDeclaration = 10, RuleParameterList = 11, RuleParameter = 12, 
     RuleReturnStatement = 13, RuleFunctionCall = 14, RuleFriendFunctionCall = 15, 
     RuleArgumentList = 16, RuleControlFlowStatement = 17, RuleIfStatement = 18, 
-    RuleLoopStatement = 19, RuleForeachStatement = 20, RuleTryCatchStatement = 21, 
-    RuleRunStatement = 22, RuleExpressionStatement = 23, RuleExpression = 24, 
-    RulePrimaryExpression = 25, RuleLiteral = 26, RuleAccessModifier = 27, 
-    RuleType = 28, RuleBaseType = 29, RuleMapType = 30
+    RuleLoopStatement = 19, RuleWhileLoop = 20, RuleForLoop = 21, RuleForInit = 22, 
+    RuleForUpdate = 23, RuleForeachStatement = 24, RuleTryCatchStatement = 25, 
+    RuleRunStatement = 26, RuleExpressionStatement = 27, RuleExpression = 28, 
+    RulePrimaryExpression = 29, RuleLiteral = 30, RuleAccessModifier = 31, 
+    RuleType = 32, RuleBaseType = 33, RuleMapType = 34
   };
 
   explicit EZLanguageParser(antlr4::TokenStream *input);
@@ -72,6 +73,10 @@ public:
   class ControlFlowStatementContext;
   class IfStatementContext;
   class LoopStatementContext;
+  class WhileLoopContext;
+  class ForLoopContext;
+  class ForInitContext;
+  class ForUpdateContext;
   class ForeachStatementContext;
   class TryCatchStatementContext;
   class RunStatementContext;
@@ -423,6 +428,22 @@ public:
   public:
     LoopStatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    WhileLoopContext *whileLoop();
+    ForLoopContext *forLoop();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  LoopStatementContext* loopStatement();
+
+  class  WhileLoopContext : public antlr4::ParserRuleContext {
+  public:
+    WhileLoopContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
     ExpressionContext *expression();
     std::vector<StatementContext *> statement();
     StatementContext* statement(size_t i);
@@ -434,7 +455,115 @@ public:
    
   };
 
-  LoopStatementContext* loopStatement();
+  WhileLoopContext* whileLoop();
+
+  class  ForLoopContext : public antlr4::ParserRuleContext {
+  public:
+    ForLoopContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    ForInitContext *forInit();
+    ExpressionContext *expression();
+    ForUpdateContext *forUpdate();
+    std::vector<StatementContext *> statement();
+    StatementContext* statement(size_t i);
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+   
+  };
+
+  ForLoopContext* forLoop();
+
+  class  ForInitContext : public antlr4::ParserRuleContext {
+  public:
+    ForInitContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    ForInitContext() = default;
+    void copyFrom(ForInitContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ForInitVarDeclContext : public ForInitContext {
+  public:
+    ForInitVarDeclContext(ForInitContext *ctx);
+
+    TypeContext *type();
+    antlr4::tree::TerminalNode *IDENTIFIER();
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ForInitAssignContext : public ForInitContext {
+  public:
+    ForInitAssignContext(ForInitContext *ctx);
+
+    antlr4::tree::TerminalNode *IDENTIFIER();
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ForInitExprContext : public ForInitContext {
+  public:
+    ForInitExprContext(ForInitContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  ForInitContext* forInit();
+
+  class  ForUpdateContext : public antlr4::ParserRuleContext {
+  public:
+    ForUpdateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    ForUpdateContext() = default;
+    void copyFrom(ForUpdateContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
+    virtual size_t getRuleIndex() const override;
+
+   
+  };
+
+  class  ForUpdateAssignContext : public ForUpdateContext {
+  public:
+    ForUpdateAssignContext(ForUpdateContext *ctx);
+
+    antlr4::tree::TerminalNode *IDENTIFIER();
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ForUpdateExprContext : public ForUpdateContext {
+  public:
+    ForUpdateExprContext(ForUpdateContext *ctx);
+
+    ExpressionContext *expression();
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  ForUpdateContext* forUpdate();
 
   class  ForeachStatementContext : public antlr4::ParserRuleContext {
   public:

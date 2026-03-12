@@ -1,5 +1,5 @@
 
-// Generated from EZLanguage.g4 by ANTLR 4.13.2
+// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -73,6 +73,27 @@ public:
 
   virtual void enterLoopStatement(EZLanguageParser::LoopStatementContext *ctx) = 0;
   virtual void exitLoopStatement(EZLanguageParser::LoopStatementContext *ctx) = 0;
+
+  virtual void enterWhileLoop(EZLanguageParser::WhileLoopContext *ctx) = 0;
+  virtual void exitWhileLoop(EZLanguageParser::WhileLoopContext *ctx) = 0;
+
+  virtual void enterForLoop(EZLanguageParser::ForLoopContext *ctx) = 0;
+  virtual void exitForLoop(EZLanguageParser::ForLoopContext *ctx) = 0;
+
+  virtual void enterForInitVarDecl(EZLanguageParser::ForInitVarDeclContext *ctx) = 0;
+  virtual void exitForInitVarDecl(EZLanguageParser::ForInitVarDeclContext *ctx) = 0;
+
+  virtual void enterForInitAssign(EZLanguageParser::ForInitAssignContext *ctx) = 0;
+  virtual void exitForInitAssign(EZLanguageParser::ForInitAssignContext *ctx) = 0;
+
+  virtual void enterForInitExpr(EZLanguageParser::ForInitExprContext *ctx) = 0;
+  virtual void exitForInitExpr(EZLanguageParser::ForInitExprContext *ctx) = 0;
+
+  virtual void enterForUpdateAssign(EZLanguageParser::ForUpdateAssignContext *ctx) = 0;
+  virtual void exitForUpdateAssign(EZLanguageParser::ForUpdateAssignContext *ctx) = 0;
+
+  virtual void enterForUpdateExpr(EZLanguageParser::ForUpdateExprContext *ctx) = 0;
+  virtual void exitForUpdateExpr(EZLanguageParser::ForUpdateExprContext *ctx) = 0;
 
   virtual void enterForeachStatement(EZLanguageParser::ForeachStatementContext *ctx) = 0;
   virtual void exitForeachStatement(EZLanguageParser::ForeachStatementContext *ctx) = 0;

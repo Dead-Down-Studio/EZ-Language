@@ -1,5 +1,5 @@
 
-// Generated from EZLanguage.g4 by ANTLR 4.13.2
+// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -75,6 +75,27 @@ public:
 
   virtual void enterLoopStatement(EZLanguageParser::LoopStatementContext * /*ctx*/) override { }
   virtual void exitLoopStatement(EZLanguageParser::LoopStatementContext * /*ctx*/) override { }
+
+  virtual void enterWhileLoop(EZLanguageParser::WhileLoopContext * /*ctx*/) override { }
+  virtual void exitWhileLoop(EZLanguageParser::WhileLoopContext * /*ctx*/) override { }
+
+  virtual void enterForLoop(EZLanguageParser::ForLoopContext * /*ctx*/) override { }
+  virtual void exitForLoop(EZLanguageParser::ForLoopContext * /*ctx*/) override { }
+
+  virtual void enterForInitVarDecl(EZLanguageParser::ForInitVarDeclContext * /*ctx*/) override { }
+  virtual void exitForInitVarDecl(EZLanguageParser::ForInitVarDeclContext * /*ctx*/) override { }
+
+  virtual void enterForInitAssign(EZLanguageParser::ForInitAssignContext * /*ctx*/) override { }
+  virtual void exitForInitAssign(EZLanguageParser::ForInitAssignContext * /*ctx*/) override { }
+
+  virtual void enterForInitExpr(EZLanguageParser::ForInitExprContext * /*ctx*/) override { }
+  virtual void exitForInitExpr(EZLanguageParser::ForInitExprContext * /*ctx*/) override { }
+
+  virtual void enterForUpdateAssign(EZLanguageParser::ForUpdateAssignContext * /*ctx*/) override { }
+  virtual void exitForUpdateAssign(EZLanguageParser::ForUpdateAssignContext * /*ctx*/) override { }
+
+  virtual void enterForUpdateExpr(EZLanguageParser::ForUpdateExprContext * /*ctx*/) override { }
+  virtual void exitForUpdateExpr(EZLanguageParser::ForUpdateExprContext * /*ctx*/) override { }
 
   virtual void enterForeachStatement(EZLanguageParser::ForeachStatementContext * /*ctx*/) override { }
   virtual void exitForeachStatement(EZLanguageParser::ForeachStatementContext * /*ctx*/) override { }

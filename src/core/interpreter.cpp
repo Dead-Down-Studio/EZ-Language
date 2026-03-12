@@ -247,9 +247,26 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
         }
         if (auto *stringTok = literal->STRING()) {
             std::string text = stringTok->getText();
-            // Remove surrounding quotes
+            // Remove surrounding quotes and unescape sequences
             if (text.size() >= 2 && text.front() == '"' && text.back() == '"') {
                 text = text.substr(1, text.size() - 2);
+                // Unescape: \n -> newline, \t -> tab, \\ -> backslash, \" -> quote
+                std::string unescaped;
+                for (size_t i = 0; i < text.size(); i++) {
+                    if (text[i] == '\\' && i + 1 < text.size()) {
+                        switch (text[i+1]) {
+                            case 'n': unescaped += '\n'; i++; break;
+                            case 't': unescaped += '\t'; i++; break;
+                            case 'r': unescaped += '\r'; i++; break;
+                            case '"': unescaped += '"'; i++; break;
+                            case '\\': unescaped += '\\'; i++; break;
+                            default: unescaped += text[i]; break;
+                        }
+                    } else {
+                        unescaped += text[i];
+                    }
+                }
+                text = unescaped;
             }
             Value v;
             v.type = SimpleType::String;
@@ -261,7 +278,12 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
     }
 
     if (auto *call = primary.functionCall()) {
-        const std::string fname = call->IDENTIFIER()->getText();
+        auto *idNode = call->IDENTIFIER();
+        if (!idNode) {
+            diagnostics.push_back({lineOf(primary), "function call missing identifier"});
+            return std::nullopt;
+        }
+        const std::string fname = idNode->getText();
         // Built-in print/printf support
         if (fname == "print" || fname == "printf") {
             std::vector<std::string> rendered;
@@ -304,8 +326,14 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
     }
 
     if (auto *friendCall = primary.friendFunctionCall()) {
-        const std::string alias = friendCall->IDENTIFIER(0)->getText();
-        const std::string symbol = friendCall->IDENTIFIER(1)->getText();
+        auto *aliasNode = friendCall->IDENTIFIER(0);
+        auto *symbolNode = friendCall->IDENTIFIER(1);
+        if (!aliasNode || !symbolNode) {
+            diagnostics.push_back({lineOf(primary), "friend call missing alias or symbol name"});
+            return std::nullopt;
+        }
+        const std::string alias = aliasNode->getText();
+        const std::string symbol = symbolNode->getText();
 
         auto it = libraries.find(alias);
         if (it == libraries.end()) {
@@ -340,8 +368,14 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
 void SimpleInterpreter::handleFriendCall(EZLanguageParser::FriendFunctionCallContext &context,
                                          std::vector<Diagnostic> &diagnostics)
 {
-    const std::string alias = context.IDENTIFIER(0)->getText();
-    const std::string symbol = context.IDENTIFIER(1)->getText();
+    auto *aliasNode = context.IDENTIFIER(0);
+    auto *symbolNode = context.IDENTIFIER(1);
+    if (!aliasNode || !symbolNode) {
+        diagnostics.push_back({lineOf(context), "friend call missing alias or symbol name"});
+        return;
+    }
+    const std::string alias = aliasNode->getText();
+    const std::string symbol = symbolNode->getText();
 
     auto it = libraries.find(alias);
     if (it == libraries.end()) {
@@ -440,8 +474,28 @@ std::optional<Value> SimpleInterpreter::callSymbol(const std::filesystem::path &
                 result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3]);
                 break;
             }
+            case 5: {
+                using Fn = double (*)(double, double, double, double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4]);
+                break;
+            }
+            case 6: {
+                using Fn = double (*)(double, double, double, double, double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4], doubleArgs[5]);
+                break;
+            }
+            case 7: {
+                using Fn = double (*)(double, double, double, double, double, double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4], doubleArgs[5], doubleArgs[6]);
+                break;
+            }
+            case 8: {
+                using Fn = double (*)(double, double, double, double, double, double, double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4], doubleArgs[5], doubleArgs[6], doubleArgs[7]);
+                break;
+            }
             default:
-                diagnostics.push_back({line, "only up to 4 arguments supported"});
+                diagnostics.push_back({line, "only up to 8 arguments supported (expand callSymbol() for more)"});
                 return std::nullopt;
         }
 
@@ -483,8 +537,28 @@ std::optional<Value> SimpleInterpreter::callSymbol(const std::filesystem::path &
                 result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3]);
                 break;
             }
+            case 5: {
+                using Fn = int (*)(int, int, int, int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4]);
+                break;
+            }
+            case 6: {
+                using Fn = int (*)(int, int, int, int, int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4], intArgs[5]);
+                break;
+            }
+            case 7: {
+                using Fn = int (*)(int, int, int, int, int, int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4], intArgs[5], intArgs[6]);
+                break;
+            }
+            case 8: {
+                using Fn = int (*)(int, int, int, int, int, int, int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4], intArgs[5], intArgs[6], intArgs[7]);
+                break;
+            }
             default:
-                diagnostics.push_back({line, "only up to 4 arguments supported"});
+                diagnostics.push_back({line, "only up to 8 arguments supported (expand callSymbol() for more)"});
                 return std::nullopt;
         }
 
@@ -777,21 +851,13 @@ bool SimpleInterpreter::executeIfStatement(EZLanguageParser::IfStatementContext 
     
     // Check main if condition
     if (condition->intValue != 0) {
-        // Execute main if block - get statements until we hit an else if or end
-        std::vector<EZLanguageParser::StatementContext*> block;
-        while (stmtIdx < statements.size()) {
-            // Simple approach: all statements are in one flat list
-            // We need to count braces in grammar to determine blocks
-            // For now, execute all statements in the if block
-            block.push_back(statements[stmtIdx++]);
-            // Break at first statement (simplified - grammar needs better block handling)
-            break;
-        }
-        return executeStatementBlock(block, diagnostics, shouldBreak, shouldContinue, returnValue);
+        // Execute all statements in the if block
+        // Note: ANTLR grammar flattens the braced block into one statements list
+        return executeStatementBlock(statements, diagnostics, shouldBreak, shouldContinue, returnValue);
     }
     
-    // Note: Full else if/else support requires better grammar analysis
-    // For MVP, this handles simple if statements
+    // Note: Full else if/else support not yet implemented
+    // For MVP, this handles simple if statements (else if/else TBD)
     
     return true;
 }
@@ -800,24 +866,121 @@ bool SimpleInterpreter::executeLoopStatement(EZLanguageParser::LoopStatementCont
                                             std::vector<Diagnostic> &diagnostics,
                                             std::optional<Value> &returnValue)
 {
-    // Grammar: (' while' | 'for') '(' expression? ')' '{' statement* '}'
-    // Determine loop type from the token text
-    std::string loopType = context.getStart()->getText();
-    auto statements = context.statement();
-    auto expr = context.expression();
-    
-    if (loopType == "for") {
-        // For loops in this simple form just evaluate the condition like while
-        // Full C-style for loops would need: for(init; condition; increment)
-        // But our grammar doesn't support that yet
-        diagnostics.push_back({lineOf(context), "for loops not fully implemented (use while instead)"});
+    EZLanguageParser::ExpressionContext *conditionExpr = nullptr;
+    std::vector<EZLanguageParser::StatementContext *> statements;
+    EZLanguageParser::ForUpdateContext *forUpdate = nullptr;
+    bool isForLoop = false;
+    bool hasLoopScope = false;
+
+    struct LoopScopeGuard {
+        std::vector<std::unordered_map<std::string, Value>> &framesRef;
+        bool &enabled;
+        ~LoopScopeGuard() {
+            if (enabled) {
+                framesRef.pop_back();
+            }
+        }
+    } loopScopeGuard{frames, hasLoopScope};
+
+    // Parse while-loop context.
+    if (auto *whileCtx = context.whileLoop()) {
+        conditionExpr = whileCtx->expression();
+        statements = whileCtx->statement();
+    } else if (auto *forCtx = context.forLoop()) {
+        // C-style for loop has its own scope for init declarations.
+        frames.emplace_back();
+        hasLoopScope = true;
+        isForLoop = true;
+
+        if (auto *initCtx = forCtx->forInit()) {
+            if (auto *initVar = dynamic_cast<EZLanguageParser::ForInitVarDeclContext *>(initCtx)) {
+                const std::string typeName = initVar->type()->getText();
+                SimpleType declType = SimpleType::Unknown;
+                if (typeName == "int") declType = SimpleType::Int;
+                else if (typeName == "float") declType = SimpleType::Float;
+                else if (typeName == "boolean") declType = SimpleType::Bool;
+                else {
+                    diagnostics.push_back({lineOf(*initVar), "only 'int', 'float', and 'boolean' variables are supported in for-loop initializer"});
+                    return false;
+                }
+
+                const std::string variableName = initVar->IDENTIFIER()->getText();
+                if (frames.back().count(variableName) != 0) {
+                    diagnostics.push_back({lineOf(*initVar), "variable '" + variableName + "' already declared"});
+                    return false;
+                }
+
+                Value value;
+                if (declType == SimpleType::Bool) value = makeBool(false);
+                else if (declType == SimpleType::Float) value = makeFloat(0.0);
+                else value = makeInt(0);
+
+                if (auto *initExpr = initVar->expression()) {
+                    auto evaluated = evaluateExpression(*initExpr, diagnostics);
+                    if (!evaluated.has_value()) {
+                        return false;
+                    }
+                    if (evaluated->type != declType) {
+                        diagnostics.push_back({lineOf(*initVar), "cannot assign expression of type '" + toString(evaluated->type) + "' to variable of type '" + typeName + "'"});
+                        return false;
+                    }
+                    value = *evaluated;
+                }
+
+                frames.back().emplace(variableName, value);
+            } else if (auto *initAssign = dynamic_cast<EZLanguageParser::ForInitAssignContext *>(initCtx)) {
+                const std::string variableName = initAssign->IDENTIFIER()->getText();
+                int frameIndex = -1;
+                for (int i = static_cast<int>(frames.size()) - 1; i >= 0; --i) {
+                    if (frames[i].count(variableName)) {
+                        frameIndex = i;
+                        break;
+                    }
+                }
+                if (frameIndex == -1) {
+                    diagnostics.push_back({lineOf(*initAssign), "variable '" + variableName + "' not declared"});
+                    return false;
+                }
+
+                auto evaluated = evaluateExpression(*initAssign->expression(), diagnostics);
+                if (!evaluated.has_value()) {
+                    return false;
+                }
+
+                const Value &existingValue = frames[frameIndex][variableName];
+                if (existingValue.type != evaluated->type && existingValue.type != SimpleType::Unknown) {
+                    diagnostics.push_back({lineOf(*initAssign), "cannot assign expression of type '" + toString(evaluated->type) + "' to variable of type '" + toString(existingValue.type) + "'"});
+                    return false;
+                }
+                frames[frameIndex][variableName] = *evaluated;
+            } else if (auto *initExpr = dynamic_cast<EZLanguageParser::ForInitExprContext *>(initCtx)) {
+                if (auto evaluated = evaluateExpression(*initExpr->expression(), diagnostics); !evaluated.has_value()) {
+                    return false;
+                }
+            }
+        }
+
+        conditionExpr = forCtx->expression();
+        statements = forCtx->statement();
+        forUpdate = forCtx->forUpdate();
+    } else {
+        diagnostics.push_back({lineOf(context), "invalid loop statement"});
         return false;
     }
+
+    // Guard against accidental non-terminating loops in interpreter execution.
+    const size_t MAX_ITERATIONS = 1000000;
+    size_t iterations = 0;
     
-    // While loop execution
     while (true) {
-        if (expr) {
-            auto condition = evaluateExpression(*expr, diagnostics);
+        iterations++;
+        if (iterations > MAX_ITERATIONS) {
+            diagnostics.push_back({lineOf(context), "loop exceeded maximum iteration count (possible infinite loop)"});
+            return false;
+        }
+        
+        if (conditionExpr) {
+            auto condition = evaluateExpression(*conditionExpr, diagnostics);
             if (!condition.has_value()) return false;
             
             if (condition->type != SimpleType::Bool) {
@@ -848,12 +1011,37 @@ bool SimpleInterpreter::executeLoopStatement(EZLanguageParser::LoopStatementCont
             break; // Break out of loop
         }
         
-        // shouldContinue: just continue to next iteration (already at end of loop body)
-        
-        if (!expr) {
-            // Infinite loop with no break hit - prevent actual infinite loop in interpreter
-            diagnostics.push_back({lineOf(context), "infinite loop detected without break statement"});
-            return false;
+        if (isForLoop && forUpdate != nullptr) {
+            if (auto *updateAssign = dynamic_cast<EZLanguageParser::ForUpdateAssignContext *>(forUpdate)) {
+                const std::string variableName = updateAssign->IDENTIFIER()->getText();
+                int frameIndex = -1;
+                for (int i = static_cast<int>(frames.size()) - 1; i >= 0; --i) {
+                    if (frames[i].count(variableName)) {
+                        frameIndex = i;
+                        break;
+                    }
+                }
+                if (frameIndex == -1) {
+                    diagnostics.push_back({lineOf(*updateAssign), "variable '" + variableName + "' not declared"});
+                    return false;
+                }
+
+                auto evaluated = evaluateExpression(*updateAssign->expression(), diagnostics);
+                if (!evaluated.has_value()) {
+                    return false;
+                }
+
+                const Value &existingValue = frames[frameIndex][variableName];
+                if (existingValue.type != evaluated->type && existingValue.type != SimpleType::Unknown) {
+                    diagnostics.push_back({lineOf(*updateAssign), "cannot assign expression of type '" + toString(evaluated->type) + "' to variable of type '" + toString(existingValue.type) + "'"});
+                    return false;
+                }
+                frames[frameIndex][variableName] = *evaluated;
+            } else if (auto *updateExpr = dynamic_cast<EZLanguageParser::ForUpdateExprContext *>(forUpdate)) {
+                if (auto evaluated = evaluateExpression(*updateExpr->expression(), diagnostics); !evaluated.has_value()) {
+                    return false;
+                }
+            }
         }
     }
     

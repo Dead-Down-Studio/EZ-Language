@@ -1,5 +1,5 @@
 
-// Generated from EZLanguage.g4 by ANTLR 4.13.2
+// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -58,6 +58,20 @@ public:
     virtual std::any visitIfStatement(EZLanguageParser::IfStatementContext *context) = 0;
 
     virtual std::any visitLoopStatement(EZLanguageParser::LoopStatementContext *context) = 0;
+
+    virtual std::any visitWhileLoop(EZLanguageParser::WhileLoopContext *context) = 0;
+
+    virtual std::any visitForLoop(EZLanguageParser::ForLoopContext *context) = 0;
+
+    virtual std::any visitForInitVarDecl(EZLanguageParser::ForInitVarDeclContext *context) = 0;
+
+    virtual std::any visitForInitAssign(EZLanguageParser::ForInitAssignContext *context) = 0;
+
+    virtual std::any visitForInitExpr(EZLanguageParser::ForInitExprContext *context) = 0;
+
+    virtual std::any visitForUpdateAssign(EZLanguageParser::ForUpdateAssignContext *context) = 0;
+
+    virtual std::any visitForUpdateExpr(EZLanguageParser::ForUpdateExprContext *context) = 0;
 
     virtual std::any visitForeachStatement(EZLanguageParser::ForeachStatementContext *context) = 0;
 
