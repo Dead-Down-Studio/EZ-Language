@@ -14,10 +14,13 @@ statement:
     | friendFunctionCall 
     | expressionStatement 
     | variableDeclaration 
+    | assignmentStatement
     | controlFlowStatement 
     | foreachStatement
     | functionDeclaration
-    | returnStatement;
+    | returnStatement
+    | breakStatement
+    | continueStatement;
 
 envDeclaration: 'env' IDENTIFIER ';';
 includeStatement: 'import' IDENTIFIER ';';
@@ -27,6 +30,10 @@ friendStatement: 'friend' IDENTIFIER ':' IDENTIFIER 'as' IDENTIFIER ';';
 classDeclaration: accessModifier? 'class' IDENTIFIER '(' ')' ('extends' IDENTIFIER)? ('implements' IDENTIFIER (',' IDENTIFIER)*)? '{' (variableDeclaration | functionDeclaration)* '}';
 
 variableDeclaration: accessModifier? type IDENTIFIER ('=' expression)? ';';
+
+assignmentStatement: IDENTIFIER '=' expression ';';
+breakStatement: 'break' ';';
+continueStatement: 'continue' ';';
 
 functionDeclaration: accessModifier? type IDENTIFIER '(' parameterList? ')' '{' (statement)* '}';
 parameterList: parameter (',' parameter)*;

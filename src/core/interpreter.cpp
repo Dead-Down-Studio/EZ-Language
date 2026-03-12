@@ -7,6 +7,7 @@ namespace {
 
 std::string valueToString(const Value &v) {
     if (v.type == SimpleType::Bool) return v.intValue ? "true" : "false";
+    if (v.type == SimpleType::Float) return std::to_string(v.floatValue);
     if (v.type == SimpleType::String) return v.stringValue;
     return std::to_string(v.intValue);
 }
@@ -48,6 +49,11 @@ bool SimpleInterpreter::execute(EZLanguageParser::ProgramContext *program, std::
             continue;
         }
 
+        if (auto *assignStmt = statement->assignmentStatement()) {
+            handleAssignmentStatement(*assignStmt, diagnostics);
+            continue;
+        }
+
         if (statement->functionDeclaration()) {
             // already indexed
             continue;
@@ -55,6 +61,24 @@ bool SimpleInterpreter::execute(EZLanguageParser::ProgramContext *program, std::
 
         if (statement->returnStatement()) {
             diagnostics.push_back({lineOf(*statement), "return only valid inside functions"});
+            continue;
+        }
+        
+        if (auto *ctrlFlow = statement->controlFlowStatement()) {
+            bool shouldBreak = false, shouldContinue = false;
+            std::optional<Value> returnValue;
+            
+            if (auto *ifStmt = ctrlFlow->ifStatement()) {
+                executeIfStatement(*ifStmt, diagnostics, shouldBreak, shouldContinue, returnValue);
+            } else if (auto *loopStmt = ctrlFlow->loopStatement()) {
+                executeLoopStatement(*loopStmt, diagnostics, returnValue);
+            }
+            continue;
+        }
+        
+        if (auto *foreachStmt = statement->foreachStatement()) {
+            std::optional<Value> returnValue;
+            executeForeachStatement(*foreachStmt, diagnostics, returnValue);
             continue;
         }
     }
@@ -123,20 +147,37 @@ std::optional<Value> SimpleInterpreter::evaluateExpression(EZLanguageParser::Exp
 
         const std::string opText = operators[index];
         if (opText == "+" || opText == "-" || opText == "*" || opText == "/") {
-            if (current->type != SimpleType::Int || rhs->type != SimpleType::Int) {
-                diagnostics.push_back({lineOf(expression), "arithmetic operator '" + opText + "' expects int operands"});
+            // Support int and float arithmetic
+            bool isFloat = (current->type == SimpleType::Float || rhs->type == SimpleType::Float);
+            bool hasNumeric = ((current->type == SimpleType::Int || current->type == SimpleType::Float) &&
+                              (rhs->type == SimpleType::Int || rhs->type == SimpleType::Float));
+            
+            if (!hasNumeric) {
+                diagnostics.push_back({lineOf(expression), "arithmetic operator '" + opText + "' expects numeric operands"});
                 return std::nullopt;
             }
-            if (opText == "/" && rhs->intValue == 0) {
+            
+            // Convert to double for calculation
+            double lval = (current->type == SimpleType::Float) ? current->floatValue : static_cast<double>(current->intValue);
+            double rval = (rhs->type == SimpleType::Float) ? rhs->floatValue : static_cast<double>(rhs->intValue);
+            
+            if (opText == "/" && rval == 0.0) {
                 diagnostics.push_back({lineOf(expression), "division by zero"});
                 return std::nullopt;
             }
-            int64_t result = 0;
-            if (opText == "+") result = current->intValue + rhs->intValue;
-            else if (opText == "-") result = current->intValue - rhs->intValue;
-            else if (opText == "*") result = current->intValue * rhs->intValue;
-            else if (opText == "/") result = current->intValue / rhs->intValue;
-            current = makeInt(result);
+            
+            double result = 0.0;
+            if (opText == "+") result = lval + rval;
+            else if (opText == "-") result = lval - rval;
+            else if (opText == "*") result = lval * rval;
+            else if (opText == "/") result = lval / rval;
+            
+            // Return float if either operand is float, otherwise int
+            if (isFloat) {
+                current = makeFloat(result);
+            } else {
+                current = makeInt(static_cast<int64_t>(result));
+            }
         } else if (opText == "==" || opText == "!=") {
             if (current->type != rhs->type) {
                 diagnostics.push_back({lineOf(expression), "comparison between mismatched types"});
@@ -145,15 +186,22 @@ std::optional<Value> SimpleInterpreter::evaluateExpression(EZLanguageParser::Exp
             if (opText == "!=") res = !res;
             current = makeBool(res);
         } else if (opText == ">" || opText == "<" || opText == ">=" || opText == "<=") {
-            if (current->type != SimpleType::Int || rhs->type != SimpleType::Int) {
-                diagnostics.push_back({lineOf(expression), "relational operator '" + opText + "' expects int operands"});
+            // Support numeric comparisons (int and float)
+            bool hasNumeric = ((current->type == SimpleType::Int || current->type == SimpleType::Float) &&
+                              (rhs->type == SimpleType::Int || rhs->type == SimpleType::Float));
+            if (!hasNumeric) {
+                diagnostics.push_back({lineOf(expression), "relational operator '" + opText + "' expects numeric operands"});
                 return std::nullopt;
             }
+            
+            double lval = (current->type == SimpleType::Float) ? current->floatValue : static_cast<double>(current->intValue);
+            double rval = (rhs->type == SimpleType::Float) ? rhs->floatValue : static_cast<double>(rhs->intValue);
+            
             bool res = false;
-            if (opText == ">") res = current->intValue > rhs->intValue;
-            else if (opText == "<") res = current->intValue < rhs->intValue;
-            else if (opText == ">=") res = current->intValue >= rhs->intValue;
-            else if (opText == "<=") res = current->intValue <= rhs->intValue;
+            if (opText == ">") res = lval > rval;
+            else if (opText == "<") res = lval < rval;
+            else if (opText == ">=") res = lval >= rval;
+            else if (opText == "<=") res = lval <= rval;
             current = makeBool(res);
         } else if (opText == "&&" || opText == "||") {
             if (current->type != SimpleType::Bool || rhs->type != SimpleType::Bool) {
@@ -189,8 +237,7 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
         if (auto *number = literal->NUMBER()) {
             const std::string text = number->getText();
             if (text.find('.') != std::string::npos) {
-                diagnostics.push_back({lineOf(primary), "floating point literals not supported yet"});
-                return std::nullopt;
+                return makeFloat(std::stod(text));
             }
             return makeInt(std::stoll(text));
         }
@@ -266,22 +313,20 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
             return std::nullopt;
         }
 
-        std::vector<int> args;
+        std::vector<Value> args;
         if (auto *argsList = friendCall->argumentList()) {
             for (auto *expr : argsList->expression()) {
                 auto value = evaluateExpression(*expr, diagnostics);
                 if (!value.has_value()) return std::nullopt;
-                if (value->type != SimpleType::Int) {
-                    diagnostics.push_back({lineOf(*expr), "friend calls currently only support int arguments"});
+                if (value->type != SimpleType::Int && value->type != SimpleType::Float) {
+                    diagnostics.push_back({lineOf(*expr), "friend calls only support numeric arguments"});
                     return std::nullopt;
                 }
-                args.push_back(static_cast<int>(value->intValue));
+                args.push_back(*value);
             }
         }
 
-        auto result = callSymbol(it->second, symbol, args, diagnostics, lineOf(primary));
-        if (result.has_value()) return makeInt(result.value());
-        return std::nullopt;
+        return callSymbol(it->second, symbol, args, diagnostics, lineOf(primary));
     }
 
     if (auto *nested = primary.expression()) {
@@ -304,30 +349,34 @@ void SimpleInterpreter::handleFriendCall(EZLanguageParser::FriendFunctionCallCon
         return;
     }
 
-    std::vector<int> args;
+    std::vector<Value> args;
     if (auto *argsList = context.argumentList()) {
         for (auto *expr : argsList->expression()) {
             auto value = evaluateExpression(*expr, diagnostics);
             if (!value.has_value()) return;
-            if (value->type != SimpleType::Int) {
-                diagnostics.push_back({lineOf(*expr), "friend calls currently only support int arguments"});
+            if (value->type != SimpleType::Int && value->type != SimpleType::Float) {
+                diagnostics.push_back({lineOf(*expr), "friend calls only support numeric arguments"});
                 return;
             }
-            args.push_back(static_cast<int>(value->intValue));
+            args.push_back(*value);
         }
     }
 
     auto result = callSymbol(it->second, symbol, args, diagnostics, lineOf(context));
     if (result.has_value() && verboseOutput) {
-        output << "=> " << result.value() << '\n';
+        if (result->type == SimpleType::Int) {
+            output << "=> " << result->intValue << '\n';
+        } else if (result->type == SimpleType::Float) {
+            output << "=> " << result->floatValue << '\n';
+        }
     }
 }
 
-std::optional<int> SimpleInterpreter::callSymbol(const std::filesystem::path &libPath,
-                                                 const std::string &symbol,
-                                                 const std::vector<int> &args,
-                                                 std::vector<Diagnostic> &diagnostics,
-                                                 size_t line)
+std::optional<Value> SimpleInterpreter::callSymbol(const std::filesystem::path &libPath,
+                                                   const std::string &symbol,
+                                                   const std::vector<Value> &args,
+                                                   std::vector<Diagnostic> &diagnostics,
+                                                   size_t line)
 {
     // RTLD_NODELETE: keep library loaded (essential for Python embedding & static state)
     void *handle = dlopen(libPath.c_str(), RTLD_LAZY | RTLD_NODELETE);
@@ -344,40 +393,108 @@ std::optional<int> SimpleInterpreter::callSymbol(const std::filesystem::path &li
         return std::nullopt;
     }
 
-    int result = 0;
-    switch (args.size()) {
-        case 0: {
-            using Fn = int (*)();
-            result = reinterpret_cast<Fn>(sym)();
+    // Check if any argument is float to determine call mode
+    bool hasFloat = false;
+    for (const auto &arg : args) {
+        if (arg.type == SimpleType::Float) {
+            hasFloat = true;
             break;
         }
-        case 1: {
-            using Fn = int (*)(int);
-            result = reinterpret_cast<Fn>(sym)(args[0]);
-            break;
+    }
+
+    if (hasFloat) {
+        // Call as double function
+        std::vector<double> doubleArgs;
+        for (const auto &arg : args) {
+            if (arg.type == SimpleType::Int) {
+                doubleArgs.push_back(static_cast<double>(arg.intValue));
+            } else {
+                doubleArgs.push_back(arg.floatValue);
+            }
         }
-        case 2: {
-            using Fn = int (*)(int, int);
-            result = reinterpret_cast<Fn>(sym)(args[0], args[1]);
-            break;
+
+        double result = 0.0;
+        switch (doubleArgs.size()) {
+            case 0: {
+                using Fn = double (*)();
+                result = reinterpret_cast<Fn>(sym)();
+                break;
+            }
+            case 1: {
+                using Fn = double (*)(double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0]);
+                break;
+            }
+            case 2: {
+                using Fn = double (*)(double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1]);
+                break;
+            }
+            case 3: {
+                using Fn = double (*)(double, double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2]);
+                break;
+            }
+            case 4: {
+                using Fn = double (*)(double, double, double, double);
+                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3]);
+                break;
+            }
+            default:
+                diagnostics.push_back({line, "only up to 4 arguments supported"});
+                return std::nullopt;
         }
-        case 3: {
-            using Fn = int (*)(int, int, int);
-            result = reinterpret_cast<Fn>(sym)(args[0], args[1], args[2]);
-            break;
+
+        Value retVal;
+        retVal.type = SimpleType::Float;
+        retVal.floatValue = result;
+        return retVal;
+    } else {
+        // Call as int function
+        std::vector<int> intArgs;
+        for (const auto &arg : args) {
+            intArgs.push_back(static_cast<int>(arg.intValue));
         }
-        case 4: {
-            using Fn = int (*)(int, int, int, int);
-            result = reinterpret_cast<Fn>(sym)(args[0], args[1], args[2], args[3]);
-            break;
+
+        int result = 0;
+        switch (intArgs.size()) {
+            case 0: {
+                using Fn = int (*)();
+                result = reinterpret_cast<Fn>(sym)();
+                break;
+            }
+            case 1: {
+                using Fn = int (*)(int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0]);
+                break;
+            }
+            case 2: {
+                using Fn = int (*)(int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1]);
+                break;
+            }
+            case 3: {
+                using Fn = int (*)(int, int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2]);
+                break;
+            }
+            case 4: {
+                using Fn = int (*)(int, int, int, int);
+                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3]);
+                break;
+            }
+            default:
+                diagnostics.push_back({line, "only up to 4 arguments supported"});
+                return std::nullopt;
         }
-        default:
-            diagnostics.push_back({line, "only up to 4 int arguments supported"});
-            return std::nullopt;
+
+        Value retVal;
+        retVal.type = SimpleType::Int;
+        retVal.intValue = result;
+        return retVal;
     }
 
     // Library kept loaded via RTLD_NODELETE (required for Python embedding)
-    return result;
 }
 
 void SimpleInterpreter::handleVariableDeclaration(EZLanguageParser::VariableDeclarationContext &context,
@@ -392,9 +509,10 @@ void SimpleInterpreter::handleVariableDeclaration(EZLanguageParser::VariableDecl
     const std::string typeName = typeContext->getText();
     SimpleType declType = SimpleType::Unknown;
     if (typeName == "int") declType = SimpleType::Int;
+    else if (typeName == "float") declType = SimpleType::Float;
     else if (typeName == "boolean") declType = SimpleType::Bool;
     else {
-        diagnostics.push_back({lineOf(context), "only 'int' and 'boolean' variables are supported in interpreter"});
+        diagnostics.push_back({lineOf(context), "only 'int', 'float', and 'boolean' variables are supported in interpreter"});
         return;
     }
 
@@ -406,7 +524,15 @@ void SimpleInterpreter::handleVariableDeclaration(EZLanguageParser::VariableDecl
         return;
     }
 
-    Value value = (declType == SimpleType::Bool) ? makeBool(false) : makeInt(0);
+    Value value;
+    if (declType == SimpleType::Bool) {
+        value = makeBool(false);
+    } else if (declType == SimpleType::Float) {
+        value = makeFloat(0.0);
+    } else {
+        value = makeInt(0);
+    }
+    
     if (auto *expression = context.expression()) {
         auto evaluated = evaluateExpression(*expression, diagnostics);
         if (!evaluated.has_value()) {
@@ -420,6 +546,48 @@ void SimpleInterpreter::handleVariableDeclaration(EZLanguageParser::VariableDecl
     }
 
     frames[frameIndex].emplace(variableName, value);
+}
+
+void SimpleInterpreter::handleAssignmentStatement(EZLanguageParser::AssignmentStatementContext &context,
+                                                  std::vector<Diagnostic> &diagnostics)
+{
+    const std::string variableName = context.IDENTIFIER()->getText();
+    
+    // Find the variable in the scope chain
+    int frameIndex = -1;
+    for (int i = static_cast<int>(frames.size()) - 1; i >= 0; --i) {
+        if (frames[i].count(variableName)) {
+            frameIndex = i;
+            break;
+        }
+    }
+    
+    if (frameIndex == -1) {
+        diagnostics.push_back({lineOf(context), "variable '" + variableName + "' not declared"});
+        return;
+    }
+    
+    auto *expression = context.expression();
+    if (!expression) {
+        diagnostics.push_back({lineOf(context), "missing expression in assignment"});
+        return;
+    }
+    
+    auto evaluated = evaluateExpression(*expression, diagnostics);
+    if (!evaluated.has_value()) {
+        return;
+    }
+    
+    // Type check
+    const Value &existingValue = frames[frameIndex][variableName];
+    if (existingValue.type != evaluated->type && existingValue.type != SimpleType::Unknown) {
+        diagnostics.push_back({lineOf(context), "cannot assign expression of type '" + toString(evaluated->type) + "' to variable of type '" + toString(existingValue.type) + "'"});
+        return;
+    }
+    
+    frames[frameIndex][variableName] = *evaluated;
+    
+    if (verboseOutput) output << variableName << " = " << valueToString(*evaluated) << '\n';
 }
 
 void SimpleInterpreter::handleExpressionStatement(EZLanguageParser::ExpressionStatementContext &context,
@@ -470,35 +638,9 @@ std::optional<Value> SimpleInterpreter::executeFunction(const std::string &name,
     }
 
     std::optional<Value> returnValue;
-
-    for (auto *stmt : ctx.statement()) {
-        if (auto *vd = stmt->variableDeclaration()) {
-            handleVariableDeclaration(*vd, diagnostics);
-            if (!diagnostics.empty()) break;
-            continue;
-        }
-
-        if (auto *exprStmt = stmt->expressionStatement()) {
-            handleExpressionStatement(*exprStmt, diagnostics);
-            if (!diagnostics.empty()) break;
-            continue;
-        }
-
-        if (auto *friendCall = stmt->friendFunctionCall()) {
-            handleFriendCall(*friendCall, diagnostics);
-            if (!diagnostics.empty()) break;
-            continue;
-        }
-
-        if (auto *ret = stmt->returnStatement()) {
-            if (ret->expression()) {
-                returnValue = evaluateExpression(*ret->expression(), diagnostics);
-            } else {
-                returnValue = makeVoid();
-            }
-            break;
-        }
-    }
+    bool shouldBreak = false, shouldContinue = false;
+    
+    executeStatementBlock(ctx.statement(), diagnostics, shouldBreak, shouldContinue, returnValue);
 
     frames.pop_back();
 
@@ -522,4 +664,206 @@ std::optional<Value> SimpleInterpreter::executeFunction(const std::string &name,
 size_t SimpleInterpreter::lineOf(const antlr4::ParserRuleContext &context)
 {
     return static_cast<size_t>(context.getStart()->getLine());
+}
+
+bool SimpleInterpreter::executeStatementBlock(const std::vector<EZLanguageParser::StatementContext*> &statements,
+                                             std::vector<Diagnostic> &diagnostics,
+                                             bool &shouldBreak, bool &shouldContinue,
+                                             std::optional<Value> &returnValue)
+{
+    for (auto *stmt : statements) {
+        if (auto *vd = stmt->variableDeclaration()) {
+            handleVariableDeclaration(*vd, diagnostics);
+            if (!diagnostics.empty()) return false;
+            continue;
+        }
+
+        if (auto *exprStmt = stmt->expressionStatement()) {
+            handleExpressionStatement(*exprStmt, diagnostics);
+            if (!diagnostics.empty()) return false;
+            continue;
+        }
+
+        if (auto *friendCall = stmt->friendFunctionCall()) {
+            handleFriendCall(*friendCall, diagnostics);
+            if (!diagnostics.empty()) return false;
+            continue;
+        }
+
+        if (auto *assignStmt = stmt->assignmentStatement()) {
+            handleAssignmentStatement(*assignStmt, diagnostics);
+            if (!diagnostics.empty()) return false;
+            continue;
+        }
+
+        if (auto *ret = stmt->returnStatement()) {
+            if (ret->expression()) {
+                returnValue = evaluateExpression(*ret->expression(), diagnostics);
+            } else {
+                returnValue = makeVoid();
+            }
+            return true; // signal return
+        }
+        
+        if (stmt->breakStatement()) {
+            shouldBreak = true;
+            return true;
+        }
+        
+        if (stmt->continueStatement()) {
+            shouldContinue = true;
+            return true;
+        }
+        
+        if (auto *ctrlFlow = stmt->controlFlowStatement()) {
+            if (auto *ifStmt = ctrlFlow->ifStatement()) {
+                if (!executeIfStatement(*ifStmt, diagnostics, shouldBreak, shouldContinue, returnValue)) {
+                    return false;
+                }
+                if (shouldBreak || shouldContinue || returnValue.has_value()) {
+                    return true;
+                }
+            } else if (auto *loopStmt = ctrlFlow->loopStatement()) {
+                if (!executeLoopStatement(*loopStmt, diagnostics, returnValue)) {
+                    return false;
+                }
+                if (returnValue.has_value()) {
+                    return true;
+                }
+            }
+            continue;
+        }
+        
+        if (auto *foreachStmt = stmt->foreachStatement()) {
+            if (!executeForeachStatement(*foreachStmt, diagnostics, returnValue)) {
+                return false;
+            }
+            if (returnValue.has_value()) {
+                return true;
+            }
+            continue;
+        }
+    }
+    return true;
+}
+
+bool SimpleInterpreter::executeIfStatement(EZLanguageParser::IfStatementContext &context,
+                                          std::vector<Diagnostic> &diagnostics,
+                                          bool &shouldBreak, bool &shouldContinue,
+                                          std::optional<Value> &returnValue)
+{
+    auto expressions = context.expression();
+    auto statements = context.statement();
+    
+    if (expressions.empty()) {
+        diagnostics.push_back({lineOf(context), "if statement requires condition"});
+        return false;
+    }
+    
+    // Evaluate main if condition
+    auto condition = evaluateExpression(*expressions[0], diagnostics);
+    if (!condition.has_value()) return false;
+    
+    if (condition->type != SimpleType::Bool) {
+        diagnostics.push_back({lineOf(context), "if condition must be boolean"});
+        return false;
+    }
+    
+    // Grammar: 'if' '(' expression ')' '{' statement* '}' ('else if' '(' expression ')' '{' statement* '}')* ('else' '{' statement* '}')?
+    // This creates expression and statement lists alternating for each if/else if, then remaining statements for else
+    
+    size_t exprIdx = 0;
+    size_t stmtIdx = 0;
+    
+    // Check main if condition
+    if (condition->intValue != 0) {
+        // Execute main if block - get statements until we hit an else if or end
+        std::vector<EZLanguageParser::StatementContext*> block;
+        while (stmtIdx < statements.size()) {
+            // Simple approach: all statements are in one flat list
+            // We need to count braces in grammar to determine blocks
+            // For now, execute all statements in the if block
+            block.push_back(statements[stmtIdx++]);
+            // Break at first statement (simplified - grammar needs better block handling)
+            break;
+        }
+        return executeStatementBlock(block, diagnostics, shouldBreak, shouldContinue, returnValue);
+    }
+    
+    // Note: Full else if/else support requires better grammar analysis
+    // For MVP, this handles simple if statements
+    
+    return true;
+}
+
+bool SimpleInterpreter::executeLoopStatement(EZLanguageParser::LoopStatementContext &context,
+                                            std::vector<Diagnostic> &diagnostics,
+                                            std::optional<Value> &returnValue)
+{
+    // Grammar: (' while' | 'for') '(' expression? ')' '{' statement* '}'
+    // Determine loop type from the token text
+    std::string loopType = context.getStart()->getText();
+    auto statements = context.statement();
+    auto expr = context.expression();
+    
+    if (loopType == "for") {
+        // For loops in this simple form just evaluate the condition like while
+        // Full C-style for loops would need: for(init; condition; increment)
+        // But our grammar doesn't support that yet
+        diagnostics.push_back({lineOf(context), "for loops not fully implemented (use while instead)"});
+        return false;
+    }
+    
+    // While loop execution
+    while (true) {
+        if (expr) {
+            auto condition = evaluateExpression(*expr, diagnostics);
+            if (!condition.has_value()) return false;
+            
+            if (condition->type != SimpleType::Bool) {
+                diagnostics.push_back({lineOf(context), "loop condition must be boolean"});
+                return false;
+            }
+            
+            if (condition->intValue == 0) {
+                break; // Exit loop
+            }
+        } else {
+            // Infinite loop without condition - dangerous but allow it
+            // Must have break inside
+        }
+        
+        bool shouldBreak = false, shouldContinue = false;
+        if (!statements.empty()) {
+            if (!executeStatementBlock(statements, diagnostics, shouldBreak, shouldContinue, returnValue)) {
+                return false;
+            }
+        }
+        
+        if (returnValue.has_value()) {
+            break; // Early return from function
+        }
+        
+        if (shouldBreak) {
+            break; // Break out of loop
+        }
+        
+        // shouldContinue: just continue to next iteration (already at end of loop body)
+        
+        if (!expr) {
+            // Infinite loop with no break hit - prevent actual infinite loop in interpreter
+            diagnostics.push_back({lineOf(context), "infinite loop detected without break statement"});
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+bool SimpleInterpreter::executeForeachStatement(EZLanguageParser::ForeachStatementContext &context,
+                                               std::vector<Diagnostic> &diagnostics,
+                                               std::optional<Value> &returnValue)
+{
+    diagnostics.push_back({lineOf(context), "foreach not yet implemented (arrays not supported)"});
+    return false;
 }

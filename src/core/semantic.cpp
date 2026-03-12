@@ -44,11 +44,20 @@ SimpleType parseType(EZLanguageParser::TypeContext *ctx, vector<Diagnostic> &dia
     if (!base) return SimpleType::Unknown;
     const string t = base->getText();
     if (t == "int") return SimpleType::Int;
+    if (t == "float") return SimpleType::Float;
     if (t == "boolean") return SimpleType::Bool;
     if (t == "void") return SimpleType::Void;
     if (t == "string") return SimpleType::String;
     diagnostics.push_back({lineOf(*ctx), "type '" + t + "' is not supported yet"});
     return SimpleType::Unknown;
+}
+
+// Check if a value of type 'from' can be assigned to a variable of type 'to'
+bool isAssignable(SimpleType to, SimpleType from) {
+    if (to == from) return true;
+    // Allow int -> float implicit conversion
+    if (to == SimpleType::Float && from == SimpleType::Int) return true;
+    return false;
 }
 
 SimpleType inferExpressionType(EZLanguageParser::ExpressionContext &expr,
@@ -71,7 +80,14 @@ SimpleType inferPrimary(EZLanguageParser::PrimaryExpressionContext &p,
     }
 
     if (auto *lit = p.literal()) {
-        if (lit->NUMBER()) return SimpleType::Int;
+        if (lit->NUMBER()) {
+            // Check if it's a float (contains decimal point)
+            std::string numText = lit->NUMBER()->getText();
+            if (numText.find('.') != std::string::npos) {
+                return SimpleType::Float;
+            }
+            return SimpleType::Int;
+        }
         if (lit->BOOLEAN()) return SimpleType::Bool;
         if (lit->STRING()) return SimpleType::String;
         diagnostics.push_back({lineOf(p), "literal type not supported here"});
@@ -103,16 +119,21 @@ SimpleType inferPrimary(EZLanguageParser::PrimaryExpressionContext &p,
     }
 
     if (auto *friendCall = p.friendFunctionCall()) {
-        // Friend calls currently modeled as returning int and accepting int args.
+        // Friend calls support numeric types (int/float) with appropriate function signatures.
+        // Determine return type: if any arg is float, call as double->double; else int->int.
+        bool hasFloat = false;
         if (auto *args = friendCall->argumentList()) {
             for (auto *ex : args->expression()) {
                 auto t = inferExpressionType(*ex, vars, fns, diagnostics);
-                if (t != SimpleType::Unknown && t != SimpleType::Int) {
-                    diagnostics.push_back({lineOf(*ex), "friend calls currently only support int arguments"});
+                if (t != SimpleType::Unknown && !isNumeric(t)) {
+                    diagnostics.push_back({lineOf(*ex), "friend calls only support numeric arguments"});
+                }
+                if (t == SimpleType::Float) {
+                    hasFloat = true;
                 }
             }
         }
-        return SimpleType::Int;
+        return hasFloat ? SimpleType::Float : SimpleType::Int;
     }
 
     if (auto *inner = p.expression()) {
@@ -145,9 +166,10 @@ SimpleType inferExpressionType(EZLanguageParser::ExpressionContext &expr,
         // Simple typing rules aligned with interpreter/codegen support
         if (op == "+" || op == "-" || op == "*" || op == "/") {
             if (!isNumeric(current) || !isNumeric(rhs)) {
-                diagnostics.push_back({lineOf(expr), "arithmetic operator '" + op + "' expects int operands"});
+                diagnostics.push_back({lineOf(expr), "arithmetic operator '" + op + "' expects numeric operands"});
             }
-            current = SimpleType::Int;
+            // Result type promotion: if either operand is float, result is float
+            current = (current == SimpleType::Float || rhs == SimpleType::Float) ? SimpleType::Float : SimpleType::Int;
         } else if (op == "==" || op == "!=") {
             if (current != SimpleType::Unknown && rhs != SimpleType::Unknown && current != rhs) {
                 diagnostics.push_back({lineOf(expr), "comparison between mismatched types"});
@@ -155,7 +177,7 @@ SimpleType inferExpressionType(EZLanguageParser::ExpressionContext &expr,
             current = SimpleType::Bool;
         } else if (op == ">" || op == "<" || op == ">=" || op == "<=") {
             if (!isNumeric(current) || !isNumeric(rhs)) {
-                diagnostics.push_back({lineOf(expr), "relational operator '" + op + "' expects int operands"});
+                diagnostics.push_back({lineOf(expr), "relational operator '" + op + "' expects numeric operands"});
             }
             current = SimpleType::Bool;
         } else if (op == "&&" || op == "||") {
@@ -199,7 +221,7 @@ void typeCheckFunction(const FunctionInfo &fn,
             scope.emplace(name, VariableInfo{vt, lineOf(*vd)});
             if (vd->expression()) {
                 auto et = inferExpressionType(*vd->expression(), scope, functions, diagnostics);
-                if (vt != SimpleType::Unknown && et != SimpleType::Unknown && vt != et) {
+                if (vt != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(vt, et)) {
                     diagnostics.push_back({lineOf(*vd), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(vt) + "'"});
                 }
             }
@@ -231,12 +253,12 @@ void typeCheckFunction(const FunctionInfo &fn,
         }
 
         if (auto *friendCall = stmt->friendFunctionCall()) {
-            // Ensure arguments are int for now
+            // Validate arguments are numeric (int or float)
             if (auto *args = friendCall->argumentList()) {
                 for (auto *ex : args->expression()) {
                     auto t = inferExpressionType(*ex, scope, functions, diagnostics);
-                    if (t != SimpleType::Unknown && t != SimpleType::Int) {
-                        diagnostics.push_back({lineOf(*ex), "friend calls currently only support int arguments"});
+                    if (t != SimpleType::Unknown && !isNumeric(t)) {
+                        diagnostics.push_back({lineOf(*ex), "friend calls only support numeric arguments"});
                     }
                 }
             }
@@ -315,7 +337,7 @@ SemanticModel runSemanticChecks(EZLanguageParser::ProgramContext *program, std::
             if (vd->expression()) {
                 auto t = inferExpressionType(*vd->expression(), model.globals, model.functions, diagnostics);
                 auto declared = parseType(vd->type(), diagnostics);
-                if (declared != SimpleType::Unknown && t != SimpleType::Unknown && declared != t) {
+                if (declared != SimpleType::Unknown && t != SimpleType::Unknown && !isAssignable(declared, t)) {
                     diagnostics.push_back({lineOf(*vd), "cannot assign expression of type '" + toString(t) + "' to variable of type '" + toString(declared) + "'"});
                 }
             }

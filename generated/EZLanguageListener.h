@@ -1,5 +1,5 @@
 
-// Generated from grammar/EZLanguage.g4 by ANTLR 4.13.2
+// Generated from EZLanguage.g4 by ANTLR 4.13.2
 
 #pragma once
 
@@ -34,6 +34,15 @@ public:
 
   virtual void enterVariableDeclaration(EZLanguageParser::VariableDeclarationContext *ctx) = 0;
   virtual void exitVariableDeclaration(EZLanguageParser::VariableDeclarationContext *ctx) = 0;
+
+  virtual void enterAssignmentStatement(EZLanguageParser::AssignmentStatementContext *ctx) = 0;
+  virtual void exitAssignmentStatement(EZLanguageParser::AssignmentStatementContext *ctx) = 0;
+
+  virtual void enterBreakStatement(EZLanguageParser::BreakStatementContext *ctx) = 0;
+  virtual void exitBreakStatement(EZLanguageParser::BreakStatementContext *ctx) = 0;
+
+  virtual void enterContinueStatement(EZLanguageParser::ContinueStatementContext *ctx) = 0;
+  virtual void exitContinueStatement(EZLanguageParser::ContinueStatementContext *ctx) = 0;
 
   virtual void enterFunctionDeclaration(EZLanguageParser::FunctionDeclarationContext *ctx) = 0;
   virtual void exitFunctionDeclaration(EZLanguageParser::FunctionDeclarationContext *ctx) = 0;
