@@ -194,6 +194,221 @@ SimpleType inferExpressionType(EZLanguageParser::ExpressionContext &expr,
     return current;
 }
 
+void typeCheckStatementList(const vector<EZLanguageParser::StatementContext*> &statements,
+                            unordered_map<string, VariableInfo> &scope,
+                            unordered_map<string, VariableInfo> &locals,
+                            const unordered_map<string, FunctionInfo> &functions,
+                            SimpleType fnReturnType,
+                            bool &sawReturn,
+                            vector<Diagnostic> &diagnostics);
+
+void typeCheckAssignment(EZLanguageParser::AssignmentStatementContext &assign,
+                         unordered_map<string, VariableInfo> &scope,
+                         const unordered_map<string, FunctionInfo> &functions,
+                         vector<Diagnostic> &diagnostics)
+{
+    const string name = assign.IDENTIFIER()->getText();
+    auto it = scope.find(name);
+    if (it == scope.end()) {
+        diagnostics.push_back({lineOf(assign), "variable '" + name + "' not declared"});
+        return;
+    }
+
+    auto *expr = assign.expression();
+    if (!expr) {
+        diagnostics.push_back({lineOf(assign), "missing expression in assignment"});
+        return;
+    }
+
+    auto et = inferExpressionType(*expr, scope, functions, diagnostics);
+    if (it->second.type != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(it->second.type, et)) {
+        diagnostics.push_back({lineOf(assign), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(it->second.type) + "'"});
+    }
+}
+
+void typeCheckIf(EZLanguageParser::IfStatementContext &ifStmt,
+                 unordered_map<string, VariableInfo> &scope,
+                 unordered_map<string, VariableInfo> &locals,
+                 const unordered_map<string, FunctionInfo> &functions,
+                 SimpleType fnReturnType,
+                 bool &sawReturn,
+                 vector<Diagnostic> &diagnostics)
+{
+    for (auto *expr : ifStmt.expression()) {
+        auto t = inferExpressionType(*expr, scope, functions, diagnostics);
+        if (t != SimpleType::Unknown && t != SimpleType::Bool) {
+            diagnostics.push_back({lineOf(*expr), "if condition must be boolean"});
+        }
+    }
+
+    // The current grammar flattens branch statements; type-check all nested statements.
+    typeCheckStatementList(ifStmt.statement(), scope, locals, functions, fnReturnType, sawReturn, diagnostics);
+}
+
+void typeCheckLoop(EZLanguageParser::LoopStatementContext &loopStmt,
+                   unordered_map<string, VariableInfo> &scope,
+                   unordered_map<string, VariableInfo> &locals,
+                   const unordered_map<string, FunctionInfo> &functions,
+                   SimpleType fnReturnType,
+                   bool &sawReturn,
+                   vector<Diagnostic> &diagnostics)
+{
+    if (auto *whileCtx = loopStmt.whileLoop()) {
+        if (auto *cond = whileCtx->expression()) {
+            auto t = inferExpressionType(*cond, scope, functions, diagnostics);
+            if (t != SimpleType::Unknown && t != SimpleType::Bool) {
+                diagnostics.push_back({lineOf(*cond), "loop condition must be boolean"});
+            }
+        }
+        typeCheckStatementList(whileCtx->statement(), scope, locals, functions, fnReturnType, sawReturn, diagnostics);
+        return;
+    }
+
+    if (auto *forCtx = loopStmt.forLoop()) {
+        // Loop-scoped symbol table for initializer declarations.
+        auto forScope = scope;
+        auto forLocals = locals;
+
+        if (auto *init = forCtx->forInit()) {
+            if (auto *initVar = dynamic_cast<EZLanguageParser::ForInitVarDeclContext *>(init)) {
+                const string name = initVar->IDENTIFIER()->getText();
+                auto t = parseType(initVar->type(), diagnostics);
+                if (forLocals.count(name)) {
+                    diagnostics.push_back({lineOf(*initVar), "duplicate local variable '" + name + "'"});
+                }
+                forLocals[name] = VariableInfo{t, lineOf(*initVar)};
+                forScope[name] = VariableInfo{t, lineOf(*initVar)};
+                if (auto *expr = initVar->expression()) {
+                    auto et = inferExpressionType(*expr, forScope, functions, diagnostics);
+                    if (t != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(t, et)) {
+                        diagnostics.push_back({lineOf(*initVar), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(t) + "'"});
+                    }
+                }
+            } else if (auto *initAssign = dynamic_cast<EZLanguageParser::ForInitAssignContext *>(init)) {
+                const string name = initAssign->IDENTIFIER()->getText();
+                auto it = forScope.find(name);
+                if (it == forScope.end()) {
+                    diagnostics.push_back({lineOf(*initAssign), "variable '" + name + "' not declared"});
+                } else {
+                    auto et = inferExpressionType(*initAssign->expression(), forScope, functions, diagnostics);
+                    if (it->second.type != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(it->second.type, et)) {
+                        diagnostics.push_back({lineOf(*initAssign), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(it->second.type) + "'"});
+                    }
+                }
+            } else if (auto *initExpr = dynamic_cast<EZLanguageParser::ForInitExprContext *>(init)) {
+                inferExpressionType(*initExpr->expression(), forScope, functions, diagnostics);
+            }
+        }
+
+        if (auto *cond = forCtx->expression()) {
+            auto t = inferExpressionType(*cond, forScope, functions, diagnostics);
+            if (t != SimpleType::Unknown && t != SimpleType::Bool) {
+                diagnostics.push_back({lineOf(*cond), "loop condition must be boolean"});
+            }
+        }
+
+        typeCheckStatementList(forCtx->statement(), forScope, forLocals, functions, fnReturnType, sawReturn, diagnostics);
+
+        if (auto *update = forCtx->forUpdate()) {
+            if (auto *updateAssign = dynamic_cast<EZLanguageParser::ForUpdateAssignContext *>(update)) {
+                const string name = updateAssign->IDENTIFIER()->getText();
+                auto it = forScope.find(name);
+                if (it == forScope.end()) {
+                    diagnostics.push_back({lineOf(*updateAssign), "variable '" + name + "' not declared"});
+                } else {
+                    auto et = inferExpressionType(*updateAssign->expression(), forScope, functions, diagnostics);
+                    if (it->second.type != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(it->second.type, et)) {
+                        diagnostics.push_back({lineOf(*updateAssign), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(it->second.type) + "'"});
+                    }
+                }
+            } else if (auto *updateExpr = dynamic_cast<EZLanguageParser::ForUpdateExprContext *>(update)) {
+                inferExpressionType(*updateExpr->expression(), forScope, functions, diagnostics);
+            }
+        }
+    }
+}
+
+void typeCheckStatementList(const vector<EZLanguageParser::StatementContext*> &statements,
+                            unordered_map<string, VariableInfo> &scope,
+                            unordered_map<string, VariableInfo> &locals,
+                            const unordered_map<string, FunctionInfo> &functions,
+                            SimpleType fnReturnType,
+                            bool &sawReturn,
+                            vector<Diagnostic> &diagnostics)
+{
+    for (auto *stmt : statements) {
+        if (auto *vd = stmt->variableDeclaration()) {
+            auto vt = parseType(vd->type(), diagnostics);
+            const string name = vd->IDENTIFIER()->getText();
+            if (locals.count(name)) {
+                diagnostics.push_back({lineOf(*vd), "duplicate local variable '" + name + "'"});
+            }
+            locals[name] = VariableInfo{vt, lineOf(*vd)};
+            scope[name] = VariableInfo{vt, lineOf(*vd)};
+            if (vd->expression()) {
+                auto et = inferExpressionType(*vd->expression(), scope, functions, diagnostics);
+                if (vt != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(vt, et)) {
+                    diagnostics.push_back({lineOf(*vd), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(vt) + "'"});
+                }
+            }
+            continue;
+        }
+
+        if (auto *assign = stmt->assignmentStatement()) {
+            typeCheckAssignment(*assign, scope, functions, diagnostics);
+            continue;
+        }
+
+        if (auto *ret = stmt->returnStatement()) {
+            sawReturn = true;
+            if (ret->expression()) {
+                auto rt = inferExpressionType(*ret->expression(), scope, functions, diagnostics);
+                if (fnReturnType == SimpleType::Void) {
+                    diagnostics.push_back({lineOf(*ret), "void function should not return a value"});
+                } else if (rt != SimpleType::Unknown && fnReturnType != SimpleType::Unknown && !isAssignable(fnReturnType, rt)) {
+                    diagnostics.push_back({lineOf(*ret), "return type mismatch: expected '" + toString(fnReturnType) + "' got '" + toString(rt) + "'"});
+                }
+            } else if (fnReturnType != SimpleType::Void) {
+                diagnostics.push_back({lineOf(*ret), "missing return value for function returning '" + toString(fnReturnType) + "'"});
+            }
+            continue;
+        }
+
+        if (auto *exprStmt = stmt->expressionStatement()) {
+            if (exprStmt->expression()) {
+                inferExpressionType(*exprStmt->expression(), scope, functions, diagnostics);
+            }
+            continue;
+        }
+
+        if (auto *friendCall = stmt->friendFunctionCall()) {
+            if (auto *args = friendCall->argumentList()) {
+                for (auto *ex : args->expression()) {
+                    auto t = inferExpressionType(*ex, scope, functions, diagnostics);
+                    if (t != SimpleType::Unknown && !isNumeric(t)) {
+                        diagnostics.push_back({lineOf(*ex), "friend calls only support numeric arguments"});
+                    }
+                }
+            }
+            continue;
+        }
+
+        if (auto *ctrl = stmt->controlFlowStatement()) {
+            if (auto *ifStmt = ctrl->ifStatement()) {
+                typeCheckIf(*ifStmt, scope, locals, functions, fnReturnType, sawReturn, diagnostics);
+            } else if (auto *loopStmt = ctrl->loopStatement()) {
+                typeCheckLoop(*loopStmt, scope, locals, functions, fnReturnType, sawReturn, diagnostics);
+            }
+            continue;
+        }
+
+        if (stmt->breakStatement() || stmt->continueStatement() || stmt->foreachStatement()) {
+            // Structure-level checks for break/continue/foreach are deferred.
+            continue;
+        }
+    }
+}
+
 void typeCheckFunction(const FunctionInfo &fn,
                        EZLanguageParser::FunctionDeclarationContext &ctx,
                        const unordered_map<string, VariableInfo> &globals,
@@ -209,62 +424,7 @@ void typeCheckFunction(const FunctionInfo &fn,
     scope.insert(locals.begin(), locals.end());
 
     bool sawReturn = false;
-
-    for (auto *stmt : ctx.statement()) {
-        if (auto *vd = stmt->variableDeclaration()) {
-            auto vt = parseType(vd->type(), diagnostics);
-            const string name = vd->IDENTIFIER()->getText();
-            if (locals.count(name)) {
-                diagnostics.push_back({lineOf(*vd), "duplicate local variable '" + name + "'"});
-            }
-            locals.emplace(name, VariableInfo{vt, lineOf(*vd)});
-            scope.emplace(name, VariableInfo{vt, lineOf(*vd)});
-            if (vd->expression()) {
-                auto et = inferExpressionType(*vd->expression(), scope, functions, diagnostics);
-                if (vt != SimpleType::Unknown && et != SimpleType::Unknown && !isAssignable(vt, et)) {
-                    diagnostics.push_back({lineOf(*vd), "cannot assign expression of type '" + toString(et) + "' to variable of type '" + toString(vt) + "'"});
-                }
-            }
-            continue;
-        }
-
-        if (auto *ret = stmt->returnStatement()) {
-            sawReturn = true;
-            if (ret->expression()) {
-                auto rt = inferExpressionType(*ret->expression(), scope, functions, diagnostics);
-                if (fn.returnType == SimpleType::Void) {
-                    diagnostics.push_back({lineOf(*ret), "void function should not return a value"});
-                } else if (rt != SimpleType::Unknown && fn.returnType != SimpleType::Unknown && rt != fn.returnType) {
-                    diagnostics.push_back({lineOf(*ret), "return type mismatch: expected '" + toString(fn.returnType) + "' got '" + toString(rt) + "'"});
-                }
-            } else {
-                if (fn.returnType != SimpleType::Void) {
-                    diagnostics.push_back({lineOf(*ret), "missing return value for function returning '" + toString(fn.returnType) + "'"});
-                }
-            }
-            continue;
-        }
-
-        if (auto *exprStmt = stmt->expressionStatement()) {
-            if (exprStmt->expression()) {
-                inferExpressionType(*exprStmt->expression(), scope, functions, diagnostics);
-            }
-            continue;
-        }
-
-        if (auto *friendCall = stmt->friendFunctionCall()) {
-            // Validate arguments are numeric (int or float)
-            if (auto *args = friendCall->argumentList()) {
-                for (auto *ex : args->expression()) {
-                    auto t = inferExpressionType(*ex, scope, functions, diagnostics);
-                    if (t != SimpleType::Unknown && !isNumeric(t)) {
-                        diagnostics.push_back({lineOf(*ex), "friend calls only support numeric arguments"});
-                    }
-                }
-            }
-            continue;
-        }
-    }
+    typeCheckStatementList(ctx.statement(), scope, locals, functions, fn.returnType, sawReturn, diagnostics);
 
     if (fn.returnType != SimpleType::Void && !sawReturn) {
         diagnostics.push_back({lineOf(ctx), "function '" + ctx.IDENTIFIER()->getText() + "' is missing a return"});

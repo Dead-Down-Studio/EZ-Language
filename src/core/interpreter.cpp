@@ -1,4 +1,7 @@
 #include "interpreter.h"
+#include <cctype>
+#include <cstring>
+#include <cstdio>
 #include <dlfcn.h>
 
 using namespace std;
@@ -10,6 +13,92 @@ std::string valueToString(const Value &v) {
     if (v.type == SimpleType::Float) return std::to_string(v.floatValue);
     if (v.type == SimpleType::String) return v.stringValue;
     return std::to_string(v.intValue);
+}
+
+long long asLongLong(const Value &v)
+{
+    if (v.type == SimpleType::Float) return static_cast<long long>(v.floatValue);
+    if (v.type == SimpleType::Bool) return v.intValue ? 1LL : 0LL;
+    if (v.type == SimpleType::String) {
+        try {
+            return std::stoll(v.stringValue);
+        } catch (...) {
+            return 0LL;
+        }
+    }
+    return static_cast<long long>(v.intValue);
+}
+
+double asDouble(const Value &v)
+{
+    if (v.type == SimpleType::Float) return v.floatValue;
+    if (v.type == SimpleType::Bool) return v.intValue ? 1.0 : 0.0;
+    if (v.type == SimpleType::String) {
+        try {
+            return std::stod(v.stringValue);
+        } catch (...) {
+            return 0.0;
+        }
+    }
+    return static_cast<double>(v.intValue);
+}
+
+std::string renderPrintf(const std::string &format, const std::vector<Value> &args)
+{
+    std::string out;
+    size_t argIndex = 0;
+
+    for (size_t i = 0; i < format.size(); ++i) {
+        if (format[i] != '%') {
+            out.push_back(format[i]);
+            continue;
+        }
+
+        if (i + 1 < format.size() && format[i + 1] == '%') {
+            out.push_back('%');
+            ++i;
+            continue;
+        }
+
+        size_t specStart = i;
+        size_t j = i + 1;
+        while (j < format.size() && std::strchr("diufs", format[j]) == nullptr) {
+            ++j;
+        }
+
+        if (j >= format.size()) {
+            out.append(format.substr(specStart));
+            break;
+        }
+
+        const char conv = format[j];
+        const std::string spec = format.substr(specStart, (j - specStart) + 1);
+        i = j;
+
+        if (argIndex >= args.size()) {
+            out += "<missing>";
+            continue;
+        }
+
+        const Value &arg = args[argIndex++];
+        char buffer[256] = {0};
+
+        if (conv == 'd' || conv == 'i' || conv == 'u') {
+            std::snprintf(buffer, sizeof(buffer), spec.c_str(), asLongLong(arg));
+            out += buffer;
+        } else if (conv == 'f') {
+            std::snprintf(buffer, sizeof(buffer), spec.c_str(), asDouble(arg));
+            out += buffer;
+        } else if (conv == 's') {
+            const std::string s = valueToString(arg);
+            std::snprintf(buffer, sizeof(buffer), spec.c_str(), s.c_str());
+            out += buffer;
+        } else {
+            out += valueToString(arg);
+        }
+    }
+
+    return out;
 }
 
 } // namespace
@@ -286,23 +375,41 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
         const std::string fname = idNode->getText();
         // Built-in print/printf support
         if (fname == "print" || fname == "printf") {
-            std::vector<std::string> rendered;
+            std::vector<Value> values;
             if (auto *args = call->argumentList()) {
                 for (auto *expr : args->expression()) {
                     auto value = evaluateExpression(*expr, diagnostics);
-                    if (!value.has_value()) {
-                        rendered.push_back("<error>");
-                    } else {
-                        rendered.push_back(valueToString(value.value()));
-                    }
+                    if (!value.has_value()) return std::nullopt;
+                    values.push_back(*value);
                 }
             }
-            std::string joined;
-            for (size_t i = 0; i < rendered.size(); ++i) {
-                if (i) joined += ' ';
-                joined += rendered[i];
+
+            if (fname == "print") {
+                std::string joined;
+                for (size_t i = 0; i < values.size(); ++i) {
+                    if (i) joined += ' ';
+                    joined += valueToString(values[i]);
+                }
+                output << joined << '\n';
+                return makeInt(0);
             }
-            output << joined << '\n';
+
+            // printf: C-style formatting when first argument is a string literal/value.
+            if (!values.empty() && values[0].type == SimpleType::String) {
+                const std::string &fmt = values[0].stringValue;
+                std::vector<Value> rest(values.begin() + 1, values.end());
+                const std::string rendered = renderPrintf(fmt, rest);
+                output << rendered;
+                if (rendered.empty() || rendered.back() != '\n') output << '\n';
+            } else {
+                std::string joined;
+                for (size_t i = 0; i < values.size(); ++i) {
+                    if (i) joined += ' ';
+                    joined += valueToString(values[i]);
+                }
+                output << joined;
+                if (joined.empty() || joined.back() != '\n') output << '\n';
+            }
             return makeInt(0);
         }
 

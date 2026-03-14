@@ -1,5 +1,6 @@
 #include <filesystem>
 #include <fstream>
+#include <cstdlib>
 #include <iostream>
 #include <optional>
 #include <sstream>
@@ -71,9 +72,17 @@ static void printUsage(const std::string &binaryName)
     std::cerr << "  --run-native     Generate, compile, and execute the native binary\n";
     std::cerr << "  --prepare        Prepare Nix environment (download/build)\n";
     std::cerr << "  --ignore-conflicts, -ic  Skip config/env conflict prompts\n";
+    std::cerr << "  --non-interactive   Disable prompts and use safe defaults\n";
     std::cerr << "  --no-env         Skip Nix environment activation\n";
     std::cerr << "  --env-info       Show resolved environment info and exit\n";
+    std::cerr << "  --quiet          Force quiet output even if config enables verbose\n";
     std::cerr << "  -v, --verbose    Show environment, build plan, variable state, and evaluation results\n";
+}
+
+static bool isTruthyEnv(const char *name)
+{
+    const char *value = std::getenv(name);
+    return value != nullptr && value[0] != '\0';
 }
 
 
@@ -91,8 +100,10 @@ int main(int argc, const char *argv[])
     bool buildNative = false;
     bool runNative = false;
     bool verbose = false;
+    bool forceQuiet = false;
     bool prepareEnv = false;
     bool ignoreConflicts = false;
+    bool nonInteractive = false;
     bool skipEnv = false;
     bool showEnvInfo = false;
     bool inNixShellFlag = false; // internal marker to avoid recursion
@@ -113,10 +124,14 @@ int main(int argc, const char *argv[])
             runNative = true; buildNative = true; // implies build
         } else if (flag == "-v" || flag == "--verbose") {
             verbose = true;
+        } else if (flag == "--quiet") {
+            forceQuiet = true;
         } else if (flag == "--prepare") {
             prepareEnv = true;
         } else if (flag == "--ignore-conflicts" || flag == "-ic") {
             ignoreConflicts = true;
+        } else if (flag == "--non-interactive") {
+            nonInteractive = true;
         } else if (flag == "--no-env") {
             skipEnv = true;
         } else if (flag == "--env-info") {
@@ -146,14 +161,25 @@ int main(int argc, const char *argv[])
     envDefaults.cppStandard = config.cppStandard;
     envDefaults.outputDir = config.outputDir;
 
-    // Config file can request verbose output or skipping environment setup
-    verbose = verbose || config.verboseBuild;
+    // Config file can request verbose output unless quiet mode is forced.
+    if (forceQuiet) {
+        verbose = false;
+    } else {
+        verbose = verbose || config.verboseBuild;
+    }
     skipEnv = skipEnv || config.noEnv;
+
+    // In CI and automation, avoid any interactive prompts.
+    nonInteractive = nonInteractive || isTruthyEnv("CI") || isTruthyEnv("GITHUB_ACTIONS");
 
     bool nixPresent = skipEnv ? false : nixAvailable();
     const bool alreadyInNix = insideNixShell();
 
     if (!nixPresent && !skipEnv) {
+        if (nonInteractive) {
+            std::cerr << "Nix is not installed; continuing without Nix support due to non-interactive mode." << '\n';
+            skipEnv = true;
+        } else {
         std::cerr << "nix is not installed do you want to install it ? [Y/N] " << std::flush;
         std::string choice;
         if (!std::getline(std::cin, choice)) {
@@ -174,6 +200,7 @@ int main(int argc, const char *argv[])
         } else {
             std::cerr << "use --no-env to run the code without the nix support" << '\n';
             skipEnv = true;
+        }
         }
     }
 
@@ -298,6 +325,8 @@ int main(int argc, const char *argv[])
         if (!conflicts.empty()) {
             if (ignoreConflicts) {
                 std::cerr << "Warning: config differs from Nix environment; proceeding with existing config (conflicts: " << conflicts.size() << ")." << '\n';
+            } else if (nonInteractive) {
+                std::cerr << "Warning: config differs from Nix environment; keeping config in non-interactive mode (conflicts: " << conflicts.size() << ")." << '\n';
             } else {
                 std::cerr << "Config conflicts with Nix environment:" << '\n';
                 for (const auto &c : conflicts) {

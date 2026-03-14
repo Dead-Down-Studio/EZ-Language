@@ -15,14 +15,20 @@ Implemented now:
 
 - `env native;` environment declaration
 - `friend <stem>: <c|cpp|python> as <alias>;` native/Python module linking
-- Integer variables & arithmetic `+ - * /`
-- Boolean literals (`true`/`false` -> 1/0)
+- Typed variables (`int`, `float`, `boolean`, `string`, `void`) with assignments
+- Arithmetic/comparison/logical operators in interpreter mode
+- User-defined functions with parameters and return statements
+- Control flow: `if`, `while`, C-style `for`, `break`, `continue`
 - Built-in `print` / `printf`
 - Quiet vs verbose output modes (`--verbose`)
-- Semantic checks (private access, invalid modifiers)
+- Semantic checks (types, unknown identifiers, invalid modifiers, duplicate symbols)
 - C code emission (`--emit-c`, `--build-native`, `--run-native`)
 
-Not yet: function execution, returns, boolean operators, rich types.
+Known limitations:
+
+- C codegen currently targets a subset and does not support friend calls
+- `foreach`, classes, and full `try/catch/finally` runtime behavior are still incomplete
+- This repo currently validates friend languages `c`, `cpp`, and `python`
 
 ## Quickstart
 
@@ -31,6 +37,7 @@ cmake -S . -B build
 cmake --build build
 ./build/ez_main examples/demo.ez --run          # quiet
 ./build/ez_main examples/demo.ez --run --verbose # verbose
+./build/ez_main examples/demo.ez --run --non-interactive # no prompts (CI/demo safe)
 ```
 
 Example `examples/demo.ez`:
@@ -54,6 +61,13 @@ Nix dev shell (optional, auto-activates when available):
 ./build/ez_main examples/demo.ez --prepare   # prefetch/build env
 ./build/ez_main examples/demo.ez --run       # auto-enters nix-shell unless --no-env
 ./build/ez_main examples/demo.ez --env-info  # show resolved env file/source
+```
+
+For scripted runs and CI, prefer one of:
+
+```bash
+./build/ez_main examples/demo.ez --run --no-env
+./build/ez_main examples/demo.ez --run --non-interactive
 ```
 
 ## Quiet vs Verbose
@@ -85,13 +99,9 @@ Generate C source and optional native binary from int-only subset:
 
 ## Documentation
 
-See The `Wiki` for structured guides:
+Use the project wiki as the canonical documentation source:
 
-- Getting Started: `wiki/Quickstart`
-- Concepts: environment, friend modules, visibility, types, expressions
-- Guides: embedding native code, printing & debugging
-- Reference: CLI, grammar, diagnostics, Nix environments
-- Architecture & Roadmap
+- [EZ-Language Wiki](https://github.com/Dead-Down-Studio/EZ-Language/wiki)
 
 ## Roadmap & Milestones
 
@@ -155,7 +165,7 @@ Short-term upcoming: execute class functions & returns, boolean operators, exten
 
 ## Contributing
 
-Setup steps in `wiki/contributing/setup.md`. Please keep changes focused and reference related docs pages.
+Use the wiki contribution and setup pages for the latest workflow details.
 
 ## License
 

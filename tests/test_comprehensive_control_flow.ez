@@ -72,5 +72,5 @@ int found = searchValue(42);
 printf("fibonacci(5) = %lld (expected 5)\n", fib5);
 printf("fibonacci(10) = %lld (expected 55)\n", fib10);
 printf("factorial(5) = %lld (expected 120)\n", fact5);
-printf("countEven(20) = %lld (expected 10)\n", evens20);
+printf("countEven(20) = %lld (expected 11)\n", evens20);
 printf("searchValue(42) = %lld (expected 42)\n", found);
