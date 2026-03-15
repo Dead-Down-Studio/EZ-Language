@@ -1,4 +1,5 @@
 #include "interpreter.h"
+#include "friend_translation.h"
 #include <cctype>
 #include <cstring>
 #include <cstdio>
@@ -101,7 +102,52 @@ std::string renderPrintf(const std::string &format, const std::vector<Value> &ar
     return out;
 }
 
+FriendTranslation::FriendScalar toFriendScalar(const Value &value)
+{
+    FriendTranslation::FriendScalar out;
+    out.type = value.type;
+    out.intValue = value.intValue;
+    out.floatValue = value.floatValue;
+    return out;
+}
+
 } // namespace
+
+bool SimpleInterpreter::validateAndRecordFriendSignature(const std::string &alias,
+                                                         const std::string &symbol,
+                                                         const std::vector<Value> &args,
+                                                         std::vector<Diagnostic> &diagnostics,
+                                                         size_t line)
+{
+    bool useFloatCall = false;
+    for (const auto &arg : args) {
+        if (arg.type == SimpleType::Float) {
+            useFloatCall = true;
+            break;
+        }
+    }
+
+    const std::string key = alias + "." + symbol;
+    const auto found = friendSignatures.find(key);
+    if (found == friendSignatures.end()) {
+        friendSignatures.emplace(key, FriendCallSignature{args.size(), useFloatCall, line});
+        return true;
+    }
+
+    if (found->second.argc == args.size() && found->second.useFloatCall == useFloatCall) {
+        return true;
+    }
+
+    const std::string firstMode = found->second.useFloatCall ? "float" : "int";
+    const std::string currentMode = useFloatCall ? "float" : "int";
+    diagnostics.push_back({line,
+                           "inconsistent friend signature for '" + key +
+                               "': first call used " + firstMode + " mode with " +
+                               std::to_string(found->second.argc) +
+                               " argument(s), current call uses " + currentMode +
+                               " mode with " + std::to_string(args.size()) + " argument(s)"});
+    return false;
+}
 
 SimpleInterpreter::SimpleInterpreter(std::ostream &stream,
                                      std::unordered_map<std::string, std::filesystem::path> friendLibs,
@@ -453,12 +499,12 @@ std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::Primar
             for (auto *expr : argsList->expression()) {
                 auto value = evaluateExpression(*expr, diagnostics);
                 if (!value.has_value()) return std::nullopt;
-                if (value->type != SimpleType::Int && value->type != SimpleType::Float) {
-                    diagnostics.push_back({lineOf(*expr), "friend calls only support numeric arguments"});
-                    return std::nullopt;
-                }
                 args.push_back(*value);
             }
+        }
+
+        if (!validateAndRecordFriendSignature(alias, symbol, args, diagnostics, lineOf(primary))) {
+            return std::nullopt;
         }
 
         return callSymbol(it->second, symbol, args, diagnostics, lineOf(primary));
@@ -495,12 +541,12 @@ void SimpleInterpreter::handleFriendCall(EZLanguageParser::FriendFunctionCallCon
         for (auto *expr : argsList->expression()) {
             auto value = evaluateExpression(*expr, diagnostics);
             if (!value.has_value()) return;
-            if (value->type != SimpleType::Int && value->type != SimpleType::Float) {
-                diagnostics.push_back({lineOf(*expr), "friend calls only support numeric arguments"});
-                return;
-            }
             args.push_back(*value);
         }
+    }
+
+    if (!validateAndRecordFriendSignature(alias, symbol, args, diagnostics, lineOf(context))) {
+        return;
     }
 
     auto result = callSymbol(it->second, symbol, args, diagnostics, lineOf(context));
@@ -535,75 +581,28 @@ std::optional<Value> SimpleInterpreter::callSymbol(const std::filesystem::path &
     }
 
     // Check if any argument is float to determine call mode
-    bool hasFloat = false;
+    std::vector<FriendTranslation::FriendScalar> translatedArgs;
+    translatedArgs.reserve(args.size());
     for (const auto &arg : args) {
-        if (arg.type == SimpleType::Float) {
-            hasFloat = true;
-            break;
-        }
+        translatedArgs.push_back(toFriendScalar(arg));
     }
 
-    if (hasFloat) {
+    FriendTranslation::PreparedFriendArgs prepared;
+    std::string argError;
+    if (!FriendTranslation::prepareArguments(translatedArgs, prepared, argError)) {
+        diagnostics.push_back({line, argError});
+        return std::nullopt;
+    }
+
+    if (prepared.useFloatCall) {
         // Call as double function
-        std::vector<double> doubleArgs;
-        for (const auto &arg : args) {
-            if (arg.type == SimpleType::Int) {
-                doubleArgs.push_back(static_cast<double>(arg.intValue));
-            } else {
-                doubleArgs.push_back(arg.floatValue);
-            }
-        }
+        const auto &doubleArgs = prepared.doubleArgs;
 
         double result = 0.0;
-        switch (doubleArgs.size()) {
-            case 0: {
-                using Fn = double (*)();
-                result = reinterpret_cast<Fn>(sym)();
-                break;
-            }
-            case 1: {
-                using Fn = double (*)(double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0]);
-                break;
-            }
-            case 2: {
-                using Fn = double (*)(double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1]);
-                break;
-            }
-            case 3: {
-                using Fn = double (*)(double, double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2]);
-                break;
-            }
-            case 4: {
-                using Fn = double (*)(double, double, double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3]);
-                break;
-            }
-            case 5: {
-                using Fn = double (*)(double, double, double, double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4]);
-                break;
-            }
-            case 6: {
-                using Fn = double (*)(double, double, double, double, double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4], doubleArgs[5]);
-                break;
-            }
-            case 7: {
-                using Fn = double (*)(double, double, double, double, double, double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4], doubleArgs[5], doubleArgs[6]);
-                break;
-            }
-            case 8: {
-                using Fn = double (*)(double, double, double, double, double, double, double, double);
-                result = reinterpret_cast<Fn>(sym)(doubleArgs[0], doubleArgs[1], doubleArgs[2], doubleArgs[3], doubleArgs[4], doubleArgs[5], doubleArgs[6], doubleArgs[7]);
-                break;
-            }
-            default:
-                diagnostics.push_back({line, "only up to 8 arguments supported (expand callSymbol() for more)"});
-                return std::nullopt;
+        std::string invokeError;
+        if (!FriendTranslation::invokeDoubleSymbol(sym, doubleArgs, result, invokeError)) {
+            diagnostics.push_back({line, invokeError});
+            return std::nullopt;
         }
 
         Value retVal;
@@ -612,61 +611,13 @@ std::optional<Value> SimpleInterpreter::callSymbol(const std::filesystem::path &
         return retVal;
     } else {
         // Call as int function
-        std::vector<int> intArgs;
-        for (const auto &arg : args) {
-            intArgs.push_back(static_cast<int>(arg.intValue));
-        }
+        const auto &intArgs = prepared.intArgs;
 
         int result = 0;
-        switch (intArgs.size()) {
-            case 0: {
-                using Fn = int (*)();
-                result = reinterpret_cast<Fn>(sym)();
-                break;
-            }
-            case 1: {
-                using Fn = int (*)(int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0]);
-                break;
-            }
-            case 2: {
-                using Fn = int (*)(int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1]);
-                break;
-            }
-            case 3: {
-                using Fn = int (*)(int, int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2]);
-                break;
-            }
-            case 4: {
-                using Fn = int (*)(int, int, int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3]);
-                break;
-            }
-            case 5: {
-                using Fn = int (*)(int, int, int, int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4]);
-                break;
-            }
-            case 6: {
-                using Fn = int (*)(int, int, int, int, int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4], intArgs[5]);
-                break;
-            }
-            case 7: {
-                using Fn = int (*)(int, int, int, int, int, int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4], intArgs[5], intArgs[6]);
-                break;
-            }
-            case 8: {
-                using Fn = int (*)(int, int, int, int, int, int, int, int);
-                result = reinterpret_cast<Fn>(sym)(intArgs[0], intArgs[1], intArgs[2], intArgs[3], intArgs[4], intArgs[5], intArgs[6], intArgs[7]);
-                break;
-            }
-            default:
-                diagnostics.push_back({line, "only up to 8 arguments supported (expand callSymbol() for more)"});
-                return std::nullopt;
+        std::string invokeError;
+        if (!FriendTranslation::invokeIntSymbol(sym, intArgs, result, invokeError)) {
+            diagnostics.push_back({line, invokeError});
+            return std::nullopt;
         }
 
         Value retVal;

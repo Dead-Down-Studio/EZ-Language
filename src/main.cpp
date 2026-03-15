@@ -422,6 +422,69 @@ int main(int argc, const char *argv[])
         }
     }
 
+    // In --run mode, ensure friend dylibs exist and are fresh enough for symbol lookup.
+    if (runInterpreter && !runBuild && !plan.empty()) {
+        std::vector<const BuildPlanEntry *> staleEntries;
+        staleEntries.reserve(plan.size());
+
+        for (const auto &entry : plan) {
+            if (entry.linkCommand.empty()) {
+                continue;
+            }
+
+            std::error_code ec;
+            if (!fs::exists(entry.dylib, ec)) {
+                staleEntries.push_back(&entry);
+                continue;
+            }
+
+            const auto dylibTime = fs::last_write_time(entry.dylib, ec);
+            if (ec) {
+                staleEntries.push_back(&entry);
+                continue;
+            }
+
+            if (fs::exists(entry.source, ec) && !ec) {
+                const auto sourceTime = fs::last_write_time(entry.source, ec);
+                if (!ec && sourceTime > dylibTime) {
+                    staleEntries.push_back(&entry);
+                    continue;
+                }
+            }
+
+            if (!entry.command.empty() && fs::exists(entry.object, ec) && !ec) {
+                const auto objectTime = fs::last_write_time(entry.object, ec);
+                if (!ec && objectTime > dylibTime) {
+                    staleEntries.push_back(&entry);
+                }
+            }
+        }
+
+        if (!staleEntries.empty()) {
+            if (verbose) {
+                std::cout << '\n' << "Auto-building stale/missing friend modules for --run..." << '\n';
+            }
+            for (const auto *entry : staleEntries) {
+                if (!entry->command.empty()) {
+                    if (verbose) std::cout << entry->command << '\n';
+                    const int status = std::system(entry->command.c_str());
+                    if (status != 0) {
+                        std::cerr << "Command failed with exit code " << status << '\n';
+                        return status == 0 ? 1 : status;
+                    }
+                }
+                if (!entry->linkCommand.empty()) {
+                    if (verbose) std::cout << entry->linkCommand << '\n';
+                    const int linkStatus = std::system(entry->linkCommand.c_str());
+                    if (linkStatus != 0) {
+                        std::cerr << "Link command failed with exit code " << linkStatus << '\n';
+                        return linkStatus == 0 ? 1 : linkStatus;
+                    }
+                }
+            }
+        }
+    }
+
     // Optional: C codegen and native build/run path
     if (emitC || buildNative || runNative) {
         const fs::path baseDir = sourcePath.parent_path();

@@ -9,6 +9,29 @@ EZ-Language (EZ) is designed to make programming easy, fast, and universally acc
 - **Reproducible:** Nix-powered environments guarantee consistent builds and development experiences.
 - **Community-first:** Open, extensible, and driven by contributors.
 
+## Experimental Project Notice
+
+**EZ-Language is an active experimental project.** This codebase is under active development and should be treated accordingly.
+
+### What This Means
+
+- **Rapid iteration:** APIs, behaviors, file structures, and tooling can change significantly between releases without advance notice
+- **Unpolished code:** This project includes rapid prototypes, AI-assisted scaffolding, and research utilities that have not undergone the same quality review as production-grade code
+- **Instability expected:** Breaking changes are frequent; backward compatibility is not guaranteed
+- **Limited testing:** Components may lack comprehensive test coverage and edge-case handling
+
+### Before Using This Project
+
+⚠️ **Do not use in production environments** without careful review and testing. ⚠️
+
+If you choose to use EZ-Language:
+
+1. Thoroughly audit all code before integration
+2. Expect breaking changes between versions
+3. Be prepared to adapt to API modifications
+4. Test extensively in non-critical contexts first
+5. Monitor the project regularly for stability improvements
+
 ## Status (MVP)
 
 Implemented now:

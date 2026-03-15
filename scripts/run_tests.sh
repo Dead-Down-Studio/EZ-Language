@@ -63,10 +63,27 @@ is_xfail_test() {
     return 1
 }
 
+matches_expected_error() {
+    local output_file="$1"
+    local pattern_file="$2"
+
+    while IFS= read -r pattern; do
+        if [ -z "$pattern" ]; then
+            continue
+        fi
+        if ! grep -F "$pattern" "$output_file" > /dev/null; then
+            return 1
+        fi
+    done < "$pattern_file"
+
+    return 0
+}
+
 # Find all .ez test files
 for test_file in $(find "$TESTS_DIR" -name "test_*.ez" | sort); do
     test_name=$(basename "$test_file")
     expected_file="$EXPECTED_DIR/${test_name}.out"
+    expected_err_contains_file="$EXPECTED_DIR/${test_name}.err_contains"
     output_file=$(mktemp)
     diff_file=$(mktemp)
     
@@ -74,6 +91,15 @@ for test_file in $(find "$TESTS_DIR" -name "test_*.ez" | sort); do
         echo "Running: $test_name"
         # Run the test and capture output for optional golden comparison.
         if $EZ_BINARY "$test_file" "${EZ_ARGS[@]}" 2>&1 | tee "$output_file"; then
+            if [ -f "$expected_err_contains_file" ]; then
+                echo -e "${RED}✗ FAIL${NC} - $test_name"
+                echo "  expected command failure with diagnostic match, but test succeeded"
+                ((FAILED++))
+                ERRORS+=("$test_file")
+                rm -f "$output_file" "$diff_file"
+                echo ""
+                continue
+            fi
             if is_xfail_test "$test_name"; then
                 echo -e "${YELLOW}! XPASS${NC} - $test_name (expected failure, now passing)"
                 ((FAILED++))
@@ -98,6 +124,20 @@ for test_file in $(find "$TESTS_DIR" -name "test_*.ez" | sort); do
                 ((PASSED++))
             fi
         else
+            if [ -f "$expected_err_contains_file" ]; then
+                if matches_expected_error "$output_file" "$expected_err_contains_file"; then
+                    echo -e "${GREEN}✓ PASS${NC} - $test_name"
+                    ((PASSED++))
+                else
+                    echo -e "${RED}✗ FAIL${NC} - $test_name"
+                    echo "  missing expected diagnostic pattern from $expected_err_contains_file"
+                    ((FAILED++))
+                    ERRORS+=("$test_file")
+                fi
+                rm -f "$output_file" "$diff_file"
+                echo ""
+                continue
+            fi
             if is_xfail_test "$test_name"; then
                 echo -e "${YELLOW}~ XFAIL${NC} - $test_name"
                 ((XFAILED++))
@@ -111,6 +151,14 @@ for test_file in $(find "$TESTS_DIR" -name "test_*.ez" | sort); do
     else
         # Run the test; validate output if a golden file exists.
         if $EZ_BINARY "$test_file" "${EZ_ARGS[@]}" > "$output_file" 2>&1; then
+            if [ -f "$expected_err_contains_file" ]; then
+                echo -e "${RED}✗ FAIL${NC} - $test_name"
+                echo "  expected command failure with diagnostic match, but test succeeded"
+                ((FAILED++))
+                ERRORS+=("$test_file")
+                rm -f "$output_file" "$diff_file"
+                continue
+            fi
             if is_xfail_test "$test_name"; then
                 echo -e "${YELLOW}! XPASS${NC} - $test_name (expected failure, now passing)"
                 ((FAILED++))
@@ -133,6 +181,19 @@ for test_file in $(find "$TESTS_DIR" -name "test_*.ez" | sort); do
                 ((PASSED++))
             fi
         else
+            if [ -f "$expected_err_contains_file" ]; then
+                if matches_expected_error "$output_file" "$expected_err_contains_file"; then
+                    echo -e "${GREEN}✓ PASS${NC} - $test_name"
+                    ((PASSED++))
+                else
+                    echo -e "${RED}✗ FAIL${NC} - $test_name"
+                    echo "  missing expected diagnostic pattern from $expected_err_contains_file"
+                    ((FAILED++))
+                    ERRORS+=("$test_file")
+                fi
+                rm -f "$output_file" "$diff_file"
+                continue
+            fi
             if is_xfail_test "$test_name"; then
                 echo -e "${YELLOW}~ XFAIL${NC} - $test_name"
                 ((XFAILED++))

@@ -27,11 +27,23 @@ public:
     void printVariables() const;
 
 private:
+    struct FriendCallSignature {
+        size_t argc = 0;
+        bool useFloatCall = false;
+        size_t line = 0;
+    };
+
     static std::optional<Value> callSymbol(const std::filesystem::path &libPath,
                                            const std::string &symbol,
                                            const std::vector<Value> &args,
                                            std::vector<Diagnostic> &diagnostics,
                                            size_t line);
+
+    bool validateAndRecordFriendSignature(const std::string &alias,
+                                          const std::string &symbol,
+                                          const std::vector<Value> &args,
+                                          std::vector<Diagnostic> &diagnostics,
+                                          size_t line);
 
     std::optional<Value> evaluateExpression(EZLanguageParser::ExpressionContext &expression,
                                             std::vector<Diagnostic> &diagnostics);
@@ -89,4 +101,7 @@ private:
 
     // Simple call stack of variable frames (frame 0 = globals)
     std::vector<std::unordered_map<std::string, Value>> frames;
+
+    // Tracks observed friend call signatures (alias.symbol) for consistency checks.
+    std::unordered_map<std::string, FriendCallSignature> friendSignatures;
 };

@@ -1,4 +1,5 @@
 #include "semantic.h"
+#include "friend_translation.h"
 #include "types.h"
 #include "../../generated/EZLanguageParser.h"
 
@@ -119,14 +120,17 @@ SimpleType inferPrimary(EZLanguageParser::PrimaryExpressionContext &p,
     }
 
     if (auto *friendCall = p.friendFunctionCall()) {
-        // Friend calls support numeric types (int/float) with appropriate function signatures.
+        // Friend calls support numeric and boolean values. Return type follows native call mode.
         // Determine return type: if any arg is float, call as double->double; else int->int.
         bool hasFloat = false;
         if (auto *args = friendCall->argumentList()) {
+            if (args->expression().size() > FriendTranslation::kMaxFriendCallArgs) {
+                diagnostics.push_back({lineOf(p), FriendTranslation::tooManyArgumentsMessage()});
+            }
             for (auto *ex : args->expression()) {
                 auto t = inferExpressionType(*ex, vars, fns, diagnostics);
-                if (t != SimpleType::Unknown && !isNumeric(t)) {
-                    diagnostics.push_back({lineOf(*ex), "friend calls only support numeric arguments"});
+                if (t != SimpleType::Unknown && !FriendTranslation::isSupportedArgumentType(t)) {
+                    diagnostics.push_back({lineOf(*ex), FriendTranslation::supportedArgumentTypeMessage()});
                 }
                 if (t == SimpleType::Float) {
                     hasFloat = true;
@@ -383,10 +387,13 @@ void typeCheckStatementList(const vector<EZLanguageParser::StatementContext*> &s
 
         if (auto *friendCall = stmt->friendFunctionCall()) {
             if (auto *args = friendCall->argumentList()) {
+                if (args->expression().size() > FriendTranslation::kMaxFriendCallArgs) {
+                    diagnostics.push_back({lineOf(*friendCall), FriendTranslation::tooManyArgumentsMessage()});
+                }
                 for (auto *ex : args->expression()) {
                     auto t = inferExpressionType(*ex, scope, functions, diagnostics);
-                    if (t != SimpleType::Unknown && !isNumeric(t)) {
-                        diagnostics.push_back({lineOf(*ex), "friend calls only support numeric arguments"});
+                    if (t != SimpleType::Unknown && !FriendTranslation::isSupportedArgumentType(t)) {
+                        diagnostics.push_back({lineOf(*ex), FriendTranslation::supportedArgumentTypeMessage()});
                     }
                 }
             }
