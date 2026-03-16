@@ -75,8 +75,20 @@ static void printUsage(const std::string &binaryName)
     std::cerr << "  --non-interactive   Disable prompts and use safe defaults\n";
     std::cerr << "  --no-env         Skip Nix environment activation\n";
     std::cerr << "  --env-info       Show resolved environment info and exit\n";
+    std::cerr << "  --json-diagnostics  Emit diagnostics as JSON\n";
     std::cerr << "  --quiet          Force quiet output even if config enables verbose\n";
     std::cerr << "  -v, --verbose    Show environment, build plan, variable state, and evaluation results\n";
+}
+
+static void outputDiagnostics(const std::vector<Diagnostic> &diagnostics,
+                              const fs::path &sourcePath,
+                              bool jsonDiagnostics)
+{
+    if (jsonDiagnostics) {
+        printDiagnosticsJson(diagnostics, sourcePath);
+    } else {
+        printDiagnostics(diagnostics, sourcePath);
+    }
 }
 
 static bool isTruthyEnv(const char *name)
@@ -107,6 +119,7 @@ int main(int argc, const char *argv[])
     bool skipEnv = false;
     bool showEnvInfo = false;
     bool inNixShellFlag = false; // internal marker to avoid recursion
+    bool jsonDiagnostics = false;
 
     for (int index = 2; index < argc; ++index) {
         const std::string flag = argv[index];
@@ -136,6 +149,8 @@ int main(int argc, const char *argv[])
             skipEnv = true;
         } else if (flag == "--env-info") {
             showEnvInfo = true;
+        } else if (flag == "--json-diagnostics") {
+            jsonDiagnostics = true;
         } else if (flag == "--in-nix-env") {
             inNixShellFlag = true;
         } else {
@@ -364,7 +379,7 @@ int main(int argc, const char *argv[])
     std::vector<BuildPlanEntry> plan = prepareBuildPlan(listener.getFriendModules(), listener.getBaseDirectory(), diagnostics, listener.getFriendCalls(), config);
 
     if (!diagnostics.empty()) {
-        printDiagnostics(diagnostics, sourcePath);
+        outputDiagnostics(diagnostics, sourcePath, jsonDiagnostics);
         return 1;
     }
 
@@ -504,7 +519,7 @@ int main(int argc, const char *argv[])
         CCodeGenerator codegen;
         const std::string cSrc = codegen.generate(program, semanticModel, cgDiags);
         if (!cgDiags.empty()) {
-            printDiagnostics(cgDiags, sourcePath);
+            outputDiagnostics(cgDiags, sourcePath, jsonDiagnostics);
             return 1;
         }
         // Write C output
@@ -551,7 +566,7 @@ int main(int argc, const char *argv[])
 
     SimpleInterpreter interpreter(std::cout, std::move(libMap), verbose, semanticModel);
     if (!interpreter.execute(program, diagnostics)) {
-        printDiagnostics(diagnostics, sourcePath);
+        outputDiagnostics(diagnostics, sourcePath, jsonDiagnostics);
         return 1;
     }
 

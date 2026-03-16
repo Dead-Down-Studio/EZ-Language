@@ -71,6 +71,19 @@ SimpleType inferPrimary(EZLanguageParser::PrimaryExpressionContext &p,
                         const unordered_map<string, FunctionInfo> &fns,
                         vector<Diagnostic> &diagnostics)
 {
+    if (p.children.size() == 2) {
+        auto *terminal = dynamic_cast<antlr4::tree::TerminalNode *>(p.children[0]);
+        auto *inner = dynamic_cast<EZLanguageParser::PrimaryExpressionContext *>(p.children[1]);
+        if (terminal && terminal->getText() == "-" && inner) {
+            auto innerType = inferPrimary(*inner, vars, fns, diagnostics);
+            if (!isNumeric(innerType)) {
+                diagnostics.push_back({lineOf(p), "unary '-' expects numeric operand"});
+                return SimpleType::Unknown;
+            }
+            return innerType;
+        }
+    }
+
     if (auto *id = p.IDENTIFIER()) {
         auto it = vars.find(id->getText());
         if (it == vars.end()) {

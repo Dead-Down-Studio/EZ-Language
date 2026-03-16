@@ -18,8 +18,9 @@ public:
     T__20 = 21, T__21 = 22, T__22 = 23, T__23 = 24, T__24 = 25, T__25 = 26, 
     T__26 = 27, T__27 = 28, T__28 = 29, T__29 = 30, T__30 = 31, T__31 = 32, 
     T__32 = 33, T__33 = 34, T__34 = 35, T__35 = 36, T__36 = 37, T__37 = 38, 
-    OPERATOR = 39, LT = 40, GT = 41, COMMA = 42, BOOLEAN = 43, IDENTIFIER = 44, 
-    STRING = 45, NUMBER = 46, LINE_COMMENT = 47, BLOCK_COMMENT = 48, WS = 49
+    T__38 = 39, OPERATOR = 40, LT = 41, GT = 42, COMMA = 43, BOOLEAN = 44, 
+    IDENTIFIER = 45, STRING = 46, NUMBER = 47, LINE_COMMENT = 48, BLOCK_COMMENT = 49, 
+    WS = 50
   };
 
   explicit EZLanguageLexer(antlr4::CharStream *input);

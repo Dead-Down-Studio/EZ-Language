@@ -9,3 +9,4 @@ struct Diagnostic {
 };
 
 void printDiagnostics(const std::vector<Diagnostic> &diagnostics, const std::filesystem::path &filePath);
+void printDiagnosticsJson(const std::vector<Diagnostic> &diagnostics, const std::filesystem::path &filePath);

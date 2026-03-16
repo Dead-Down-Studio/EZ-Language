@@ -179,6 +179,16 @@ private:
 
     std::optional<std::string> emitPrimary(EZLanguageParser::PrimaryExpressionContext &p, std::vector<Diagnostic> &diagnostics)
     {
+        if (p.children.size() == 2) {
+            auto *terminal = dynamic_cast<antlr4::tree::TerminalNode *>(p.children[0]);
+            auto *inner = dynamic_cast<EZLanguageParser::PrimaryExpressionContext *>(p.children[1]);
+            if (terminal && terminal->getText() == "-" && inner) {
+                auto innerExpr = emitPrimary(*inner, diagnostics);
+                if (!innerExpr.has_value()) return std::nullopt;
+                return "(-(" + innerExpr.value() + "))";
+            }
+        }
+
         if (auto *id = p.IDENTIFIER()) {
             return id->getText();
         }

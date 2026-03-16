@@ -120,6 +120,14 @@ Generate C source and optional native binary from int-only subset:
 ./build/ez_main examples/math.ez --run-native
 ```
 
+Backend parity demo (interpreter vs compiled-native on the same input):
+
+```bash
+./scripts/compare_backends.sh ./tests/test_simple_printf.ez
+# or omit argument to use the default sample
+./scripts/compare_backends.sh
+```
+
 ## Documentation
 
 Use the project wiki as the canonical documentation source:

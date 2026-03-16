@@ -65,7 +65,7 @@ runStatement: 'run' IDENTIFIER ':' STRING ';';
 
 expressionStatement: expression ';';
 expression: primaryExpression (op=(OPERATOR | LT | GT) primaryExpression)*;
-primaryExpression: IDENTIFIER | literal | functionCall | friendFunctionCall | '(' expression ')';
+primaryExpression: '-' primaryExpression | IDENTIFIER | literal | functionCall | friendFunctionCall | '(' expression ')';
 literal: STRING | NUMBER | BOOLEAN;
 
 accessModifier: 'public' | 'private' | 'protected';

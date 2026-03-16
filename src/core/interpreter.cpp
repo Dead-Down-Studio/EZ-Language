@@ -358,6 +358,25 @@ std::optional<Value> SimpleInterpreter::evaluateExpression(EZLanguageParser::Exp
 std::optional<Value> SimpleInterpreter::evaluatePrimary(EZLanguageParser::PrimaryExpressionContext &primary,
                                                         std::vector<Diagnostic> &diagnostics)
 {
+    if (primary.children.size() == 2) {
+        auto *terminal = dynamic_cast<antlr4::tree::TerminalNode *>(primary.children[0]);
+        auto *inner = dynamic_cast<EZLanguageParser::PrimaryExpressionContext *>(primary.children[1]);
+        if (terminal && terminal->getText() == "-" && inner) {
+            auto value = evaluatePrimary(*inner, diagnostics);
+            if (!value.has_value()) {
+                return std::nullopt;
+            }
+            if (value->type == SimpleType::Int) {
+                return makeInt(-value->intValue);
+            }
+            if (value->type == SimpleType::Float) {
+                return makeFloat(-value->floatValue);
+            }
+            diagnostics.push_back({lineOf(primary), "unary '-' expects numeric operand"});
+            return std::nullopt;
+        }
+    }
+
     if (auto *identifier = primary.IDENTIFIER()) {
         const std::string name = identifier->getText();
         for (auto it = frames.rbegin(); it != frames.rend(); ++it) {
@@ -884,39 +903,72 @@ bool SimpleInterpreter::executeIfStatement(EZLanguageParser::IfStatementContext 
                                           bool &shouldBreak, bool &shouldContinue,
                                           std::optional<Value> &returnValue)
 {
-    auto expressions = context.expression();
-    auto statements = context.statement();
-    
+    const auto expressions = context.expression();
+    const auto statements = context.statement();
+
     if (expressions.empty()) {
         diagnostics.push_back({lineOf(context), "if statement requires condition"});
         return false;
     }
-    
-    // Evaluate main if condition
-    auto condition = evaluateExpression(*expressions[0], diagnostics);
-    if (!condition.has_value()) return false;
-    
-    if (condition->type != SimpleType::Bool) {
-        diagnostics.push_back({lineOf(context), "if condition must be boolean"});
+
+    // Recover top-level branch blocks from '{ ... }' pairs in this if statement.
+    std::vector<std::pair<int, int>> blockTokenRanges;
+    int blockStartToken = -1;
+    for (auto *child : context.children) {
+        auto *terminal = dynamic_cast<antlr4::tree::TerminalNode *>(child);
+        if (!terminal) {
+            continue;
+        }
+
+        const std::string text = terminal->getText();
+        const int tokenIndex = terminal->getSymbol()->getTokenIndex();
+        if (text == "{") {
+            blockStartToken = tokenIndex + 1;
+            continue;
+        }
+        if (text == "}" && blockStartToken >= 0) {
+            blockTokenRanges.emplace_back(blockStartToken, tokenIndex - 1);
+            blockStartToken = -1;
+        }
+    }
+
+    if (blockTokenRanges.size() < expressions.size()) {
+        diagnostics.push_back({lineOf(context), "malformed if statement: branch block parsing failed"});
         return false;
     }
-    
-    // Grammar: 'if' '(' expression ')' '{' statement* '}' ('else if' '(' expression ')' '{' statement* '}')* ('else' '{' statement* '}')?
-    // This creates expression and statement lists alternating for each if/else if, then remaining statements for else
-    
-    size_t exprIdx = 0;
-    size_t stmtIdx = 0;
-    
-    // Check main if condition
-    if (condition->intValue != 0) {
-        // Execute all statements in the if block
-        // Note: ANTLR grammar flattens the braced block into one statements list
-        return executeStatementBlock(statements, diagnostics, shouldBreak, shouldContinue, returnValue);
+
+    std::vector<std::vector<EZLanguageParser::StatementContext *>> branchStatements(blockTokenRanges.size());
+    for (auto *stmt : statements) {
+        const int stmtToken = stmt->getStart()->getTokenIndex();
+        for (size_t i = 0; i < blockTokenRanges.size(); ++i) {
+            if (stmtToken >= blockTokenRanges[i].first && stmtToken <= blockTokenRanges[i].second) {
+                branchStatements[i].push_back(stmt);
+                break;
+            }
+        }
     }
-    
-    // Note: Full else if/else support not yet implemented
-    // For MVP, this handles simple if statements (else if/else TBD)
-    
+
+    for (size_t i = 0; i < expressions.size(); ++i) {
+        auto condition = evaluateExpression(*expressions[i], diagnostics);
+        if (!condition.has_value()) {
+            return false;
+        }
+
+        if (condition->type != SimpleType::Bool) {
+            diagnostics.push_back({lineOf(*expressions[i]), "if condition must be boolean"});
+            return false;
+        }
+
+        if (condition->intValue != 0) {
+            return executeStatementBlock(branchStatements[i], diagnostics, shouldBreak, shouldContinue, returnValue);
+        }
+    }
+
+    // Optional else block comes after condition blocks, if present.
+    if (blockTokenRanges.size() > expressions.size()) {
+        return executeStatementBlock(branchStatements.back(), diagnostics, shouldBreak, shouldContinue, returnValue);
+    }
+
     return true;
 }
 
