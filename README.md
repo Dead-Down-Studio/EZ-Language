@@ -32,26 +32,33 @@ If you choose to use EZ-Language:
 4. Test extensively in non-critical contexts first
 5. Monitor the project regularly for stability improvements
 
-## Status (MVP)
+## Current Status (MVP)
 
-Implemented now:
+Verified on 2026-03-19.
 
-- `env native;` environment declaration
-- `friend <stem>: <c|cpp|python> as <alias>;` native/Python module linking
-- Typed variables (`int`, `float`, `boolean`, `string`, `void`) with assignments
-- Arithmetic/comparison/logical operators in interpreter mode
-- User-defined functions with parameters and return statements
-- Control flow: `if`, `while`, C-style `for`, `break`, `continue`
+Working now:
+
+- `env native;` environment declaration and config/Nix-aware execution flow
+- `friend <stem>: <c|cpp|python> as <alias>;` modules with build planning and native artifact generation
+- Typed variables (`int`, `float`, `boolean`, `string`, `void`) with assignments and semantic checks
+- Interpreter support for arithmetic/comparison/logical expressions, function declarations/calls, returns, and negative numbers
+- Control flow in interpreter: `if`/`else if`/`else`, `while`, C-style `for`, `break`, `continue`
 - Built-in `print` / `printf`
-- Quiet vs verbose output modes (`--verbose`)
-- Semantic checks (types, unknown identifiers, invalid modifiers, duplicate symbols)
-- C code emission (`--emit-c`, `--build-native`, `--run-native`)
+- Quiet/verbose output controls (`--quiet`, `-v`/`--verbose`)
+- C backend flow: `--emit-c`, `--build-native`, `--run-native`
+- Backend comparison script (`./scripts/compare_backends.sh`) showing interpreter vs compiled-native parity on supported samples
+
+Quality signals:
+
+- Test suite result (2026-03-19): `26 PASSED, 0 FAILED, 1 XFAIL`
+- Includes friend type translator and control-flow regression tests
 
 Known limitations:
 
-- C codegen currently targets a subset and does not support friend calls
-- `foreach`, classes, and full `try/catch/finally` runtime behavior are still incomplete
-- This repo currently validates friend languages `c`, `cpp`, and `python`
+- C/native backend is intentionally a subset and currently does not compile friend calls
+- C/native backend coverage is narrower than interpreter coverage (advanced control-flow/forms may require interpreter mode)
+- `foreach`, classes, and full `try/catch/finally` runtime behavior remain incomplete
+- Supported friend languages in this repo are currently `c`, `cpp`, and `python`
 
 ## Quickstart
 
